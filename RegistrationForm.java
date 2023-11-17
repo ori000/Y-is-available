@@ -13,7 +13,8 @@ public class RegistrationForm extends JFrame {
     private JTextField emailTextField;
     private JTextField phoneNumberTextField;
     private JTextField regionTextField;
-    private JPasswordField passwordField; // Added password field
+    private JTextField usernameField;
+    private JPasswordField passwordField;
 
     public RegistrationForm() {
         setTitle("Registration Form");
@@ -42,7 +43,7 @@ public class RegistrationForm extends JFrame {
         emailTextField = new JTextField(20);
         phoneNumberTextField = new JTextField(20);
         regionTextField = new JTextField(20);
-        passwordField = new JPasswordField(20); // Initialize password field
+        passwordField = new JPasswordField(20);
 
         addComponent(new JLabel("First Name:"), constraints, 0, 0);
         addComponent(firstNameTextField, constraints, 1, 0);
@@ -54,8 +55,10 @@ public class RegistrationForm extends JFrame {
         addComponent(phoneNumberTextField, constraints, 1, 3);
         addComponent(new JLabel("Region:"), constraints, 0, 4);
         addComponent(regionTextField, constraints, 1, 4);
-        addComponent(new JLabel("Password:"), constraints, 0, 5); // Add password label
-        addComponent(passwordField, constraints, 1, 5); // Add password field
+        addComponent(new JLabel("Password:"), constraints, 0, 5);
+        addComponent(passwordField, constraints, 1, 6);
+        addComponent(new JLabel("Username:"), constraints, 0, 5);
+        addComponent(usernameField, constraints, 1, 6);
 
         JButton signUpButton = new JButton("Sign Up");
         styleButton(signUpButton, buttonColor, font);
@@ -68,12 +71,13 @@ public class RegistrationForm extends JFrame {
                 String email = emailTextField.getText();
                 String phoneNumber = phoneNumberTextField.getText();
                 String region = regionTextField.getText();
-                String password = new String(passwordField.getPassword()); // Get password
+                String password = new String(passwordField.getPassword());
+                String username = usernameField.getText();
 
                 // Call the method to register the user (You need to implement this method)
                 boolean isRegistered = false;
                 try {
-                    isRegistered = DatabaseConnector.registerUser(firstName, lastName, email, phoneNumber, region, password);
+                    isRegistered = DatabaseConnector.registerUser(firstName, lastName, email, phoneNumber, region, password, username);
                 } catch (NoSuchAlgorithmException e1) {
                     e1.printStackTrace();
                 }

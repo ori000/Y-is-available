@@ -18,8 +18,8 @@ public class DatabaseConnector {
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 
-    public static boolean registerUser(String firstName, String lastName, String email, String phoneNumber, String region, String password) throws NoSuchAlgorithmException {
-        String sql = "INSERT INTO users (first_name, last_name, email, phone_number, region, password) VALUES (?, ?, ?, ?, ?, ?)";
+    public static boolean registerUser(String firstName, String lastName, String email, String phoneNumber, String region, String password, String username) throws NoSuchAlgorithmException {
+        String sql = "INSERT INTO users (first_name, last_name, email, phone_number, region, password, username) VALUES (?, ?, ?, ?, ?, ?, ?)";
     
         try (Connection conn = getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, firstName);
@@ -28,6 +28,7 @@ public class DatabaseConnector {
             pstmt.setString(4, phoneNumber);
             pstmt.setString(5, region);
             pstmt.setString(6, hashPassword(password)); // Hash the password
+            pstmt.setString(7, username);
     
             int affectedRows = pstmt.executeUpdate();
             return affectedRows > 0;
