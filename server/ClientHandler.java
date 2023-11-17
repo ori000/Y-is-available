@@ -23,7 +23,7 @@ public class ClientHandler implements Runnable {
         try {
             out = new PrintWriter(clientSocket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-
+            
             String inputLine;
             while ((inputLine = in.readLine()) != null) {
                 String[] tokens = inputLine.split(" ");

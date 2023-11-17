@@ -106,7 +106,7 @@ public class Server {
     }
 
     public static void main(String[] args) {
-        int port = 1234; // Replace with the desired port
+        int port = Integer.parseInt(args[0]); // Take server port as an argument in the CLI
         try {
             Server server = new Server(port);
             server.start();
