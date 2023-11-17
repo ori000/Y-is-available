@@ -3,7 +3,7 @@ public class Env {
     private String url;
     private String username;
     private void setPassword(){
-        this.password = "oSQL.141@RP";
+        this.password = "enter your mysql password";
     }
     public String getPassword(){
         setPassword();
