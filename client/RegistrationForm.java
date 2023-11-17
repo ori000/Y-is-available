@@ -1,3 +1,4 @@
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
@@ -25,8 +26,8 @@ public class RegistrationForm extends JFrame {
         JLabel titleLabel = new JLabel("Registration Form");
         titleLabel.setFont(new Font("Arial", Font.BOLD, 20)); // Set font to bold and larger size
         GridBagConstraints titleConstraints = new GridBagConstraints();
-        titleConstraints.gridwidth = 2;
-        titleConstraints.insets = new Insets(10, 10, 50, 10);
+        titleConstraints.gridwidth = 20;
+        titleConstraints.insets = new Insets(20, 10, 60, 10);
         titleConstraints.gridx = 0;
         titleConstraints.gridy = 0;
         add(titleLabel, titleConstraints);
@@ -35,7 +36,7 @@ public class RegistrationForm extends JFrame {
         constraints.fill = GridBagConstraints.HORIZONTAL;
         constraints.insets = new Insets(30, 10, 10, 10);
 
-        Font font = new Font("Arial", Font.PLAIN, 14);
+        Font font = new Font("Arial", Font.BOLD, 14);
         Color buttonColor = new Color(100, 150, 220); // Custom button color
 
         firstNameTextField = new JTextField(20);
@@ -44,21 +45,24 @@ public class RegistrationForm extends JFrame {
         phoneNumberTextField = new JTextField(20);
         regionTextField = new JTextField(20);
         passwordField = new JPasswordField(20);
+        usernameField = new JTextField(20);
 
-        addComponent(new JLabel("First Name:"), constraints, 0, 0);
-        addComponent(firstNameTextField, constraints, 1, 0);
-        addComponent(new JLabel("Last Name:"), constraints, 0, 1);
-        addComponent(lastNameTextField, constraints, 1, 1);
-        addComponent(new JLabel("Email:"), constraints, 0, 2);
-        addComponent(emailTextField, constraints, 1, 2);
-        addComponent(new JLabel("Phone Number:"), constraints, 0, 3);
-        addComponent(phoneNumberTextField, constraints, 1, 3);
-        addComponent(new JLabel("Region:"), constraints, 0, 4);
-        addComponent(regionTextField, constraints, 1, 4);
-        addComponent(new JLabel("Password:"), constraints, 0, 5);
+
+        addComponent(new JLabel("First Name:"), constraints, 0, 1);
+        addComponent(firstNameTextField, constraints, 1, 1);
+        addComponent(new JLabel("Last Name:"), constraints, 0, 2);
+        addComponent(lastNameTextField, constraints, 1, 2);
+        addComponent(new JLabel("Email:"), constraints, 0, 3);
+        addComponent(emailTextField, constraints, 1, 3);
+        addComponent(new JLabel("Phone Number:"), constraints, 0, 4);
+        addComponent(phoneNumberTextField, constraints, 1, 4);
+        addComponent(new JLabel("Region:"), constraints, 0, 5);
+        addComponent(regionTextField, constraints, 1, 5);
+        addComponent(new JLabel("Password:"), constraints, 0, 6);
         addComponent(passwordField, constraints, 1, 6);
-        addComponent(new JLabel("Username:"), constraints, 0, 5);
-        addComponent(usernameField, constraints, 1, 6);
+        addComponent(new JLabel("Username:"), constraints, 0, 7);
+        addComponent(usernameField, constraints, 1, 7);
+
 
         JButton signUpButton = new JButton("Sign Up");
         styleButton(signUpButton, buttonColor, font);
@@ -103,25 +107,38 @@ public class RegistrationForm extends JFrame {
 
         constraints.gridwidth = 2;
         constraints.gridx = 0;
-        constraints.gridy = 6;
+        constraints.gridy = 8;
         add(signUpButton, constraints);
 
-        constraints.gridy = 7;
+        constraints.gridy = 9;
         add(loginButton, constraints);
 
         pack();
+        setResizable(false);
         setLocationRelativeTo(null);
         setVisible(true);
     }
 
     private void addComponent(Component component, GridBagConstraints constraints, int x, int y) {
-        if (component instanceof JLabel) {
-            ((JLabel) component).setHorizontalAlignment(SwingConstants.RIGHT);
+        // if (component instanceof JLabel) {
+        //     ((JLabel) component).setHorizontalAlignment(SwingConstants.RIGHT);
+        //     component.setFont(new Font("Arial", Font.BOLD, (int)(component.getFont().getSize()*1.5)));
+        // }
+        if (component instanceof JTextField) {
+            ((JTextField) component).setHorizontalAlignment(SwingConstants.LEFT);
+
+            component.setFont(new Font("Arial", Font.ITALIC, (int)(component.getFont().getSize())));
+
+            // set border to dashed
+            ((JTextField) component).setBorder(BorderFactory.createBevelBorder(1));
+
         }
-        component.setFont(new Font("Arial", Font.PLAIN, 14));
+        // component.setFont(new Font("Arial", Font.PLAIN, 14));
         constraints.gridx = x;
         constraints.gridy = y;
-        add(component, constraints);
+        if(component != null){
+            add(component, constraints);
+        }
     }
 
     private void styleButton(JButton button, Color color, Font font) {
