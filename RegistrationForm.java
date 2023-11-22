@@ -1,11 +1,14 @@
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.security.NoSuchAlgorithmException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.InetAddress;
+import java.net.Socket;
+
 
 public class RegistrationForm extends JFrame {
 
@@ -18,6 +21,8 @@ public class RegistrationForm extends JFrame {
     private JPasswordField passwordField;
 
     public RegistrationForm() {
+
+        //GUI for registration form
         setTitle("Registration Form");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new GridBagLayout());
@@ -47,7 +52,7 @@ public class RegistrationForm extends JFrame {
         passwordField = new JPasswordField(20);
         usernameField = new JTextField(20);
 
-
+        //Adding text fields to the form with their positions on the frame
         addComponent(new JLabel("First Name:"), constraints, 0, 1);
         addComponent(firstNameTextField, constraints, 1, 1);
         addComponent(new JLabel("Last Name:"), constraints, 0, 2);
@@ -63,7 +68,7 @@ public class RegistrationForm extends JFrame {
         addComponent(new JLabel("Username:"), constraints, 0, 7);
         addComponent(usernameField, constraints, 1, 7);
 
-
+        //Sign Up button to register a new user
         JButton signUpButton = new JButton("Sign Up");
         styleButton(signUpButton, buttonColor, font);
         signUpButton.addActionListener(new ActionListener() {
@@ -78,22 +83,45 @@ public class RegistrationForm extends JFrame {
                 String password = new String(passwordField.getPassword());
                 String username = usernameField.getText();
 
-                // Call the method to register the user (You need to implement this method)
-                boolean isRegistered = false;
+                // User Registration
                 try {
-                    isRegistered = DatabaseConnector.registerUser(firstName, lastName, email, phoneNumber, region, password, username);
-                } catch (NoSuchAlgorithmException e1) {
-                    e1.printStackTrace();
-                }
+                    User user = new User(firstName, lastName, email, phoneNumber, region, password, username);
+                    // 1 - Create a socket and connect to the server
+                    InetAddress ip_address = InetAddress.getByName("localhost");
+                    System.out.println("SERVER PORT NUMBER: " + ServerConfig.PORT_NUMBER);
+                    System.out.println("Client socket created with IP: " + ip_address + " and port number: " + Server.port_number);
+                    Socket registration_socket = new Socket(ip_address, ServerConfig.PORT_NUMBER); 
 
-                if (isRegistered) {
-                    JOptionPane.showMessageDialog(RegistrationForm.this, "Registration Successful");
-                } else {
-                    JOptionPane.showMessageDialog(RegistrationForm.this, "Registration Failed", "Error", JOptionPane.ERROR_MESSAGE);
-                }
+                    // 2 - Create output stream to send the user object to the server
+                    ObjectOutputStream outputStream = new ObjectOutputStream(registration_socket.getOutputStream());
+
+                    // 3 - Send the User object to the server and tell the server to register
+                    outputStream.writeObject("REGISTER");
+                    outputStream.writeObject(user);
+                    outputStream.flush();
+
+                    // 4 - Close the streams and socket
+                    outputStream.close();
+                    registration_socket.close();
+
+                    // 5 - Create an ObjectInputStream to read the response from the server
+                    ObjectInputStream inputStream = new ObjectInputStream(registration_socket.getInputStream());
+
+                    // Read the response from the server
+                    boolean isRegistered = inputStream.readBoolean();
+                    if (isRegistered) {
+                        JOptionPane.showMessageDialog(null, "Registration Successful");
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Registration Failed", "Error", JOptionPane.ERROR_MESSAGE);                
+                    }
+                    
+                } catch (Exception e1) {
+                    e1.printStackTrace();
+                } 
             }
         });
 
+        //Login button that takes the user to the login form
         JButton loginButton = new JButton("Login");
         styleButton(loginButton, buttonColor, font);
         loginButton.addActionListener(new ActionListener() {
@@ -119,6 +147,7 @@ public class RegistrationForm extends JFrame {
         setVisible(true);
     }
 
+    //helper function for GUI
     private void addComponent(Component component, GridBagConstraints constraints, int x, int y) {
         // if (component instanceof JLabel) {
         //     ((JLabel) component).setHorizontalAlignment(SwingConstants.RIGHT);
@@ -141,6 +170,7 @@ public class RegistrationForm extends JFrame {
         }
     }
 
+    //helper function for GUI
     private void styleButton(JButton button, Color color, Font font) {
         button.setBackground(color);
         button.setForeground(Color.WHITE);

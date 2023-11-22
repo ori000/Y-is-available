@@ -13,6 +13,8 @@ class LoginForm extends JFrame {
     private JPasswordField passwordField;
 
     public LoginForm(RegistrationForm registrationForm) {
+
+        //GUI for the login form
         setTitle("Login Form");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new GridBagLayout());
@@ -51,10 +53,11 @@ class LoginForm extends JFrame {
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                //logic of login button
                 String email = emailTextField.getText();
                 String password = new String(passwordField.getPassword());
 
-                if (DatabaseConnector.validateLogin(email, password)) {
+                if (DatabaseConnector.validateLogin(email, password)) { //If user has entered correct credentials
                     // Grant access
                     JOptionPane.showMessageDialog(LoginForm.this, "Access Granted");
                 } else {
@@ -104,8 +107,8 @@ class LoginForm extends JFrame {
         forgotPasswordButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ForgotPasswordForm forgotPasswordForm = new ForgotPasswordForm();
-                forgotPasswordForm.setVisible(true);
+                // ForgotPasswordForm forgotPasswordForm = new ForgotPasswordForm();
+                // forgotPasswordForm.setVisible(true);
             }
         });
         JPanel forgotPanel = new JPanel();
