@@ -8,6 +8,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 
+
 public class DatabaseConnector {
 
     //Get the connection to the database
@@ -16,7 +17,6 @@ public class DatabaseConnector {
         String URL = env.getUrl(); 
         String USER = env.getUsername(); 
         String PASSWORD = env.getPassword(); 
-        
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 
@@ -34,6 +34,12 @@ public class DatabaseConnector {
         String sql = "INSERT INTO users (first_name, last_name, email, phone_number, region, password, username) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
         //Connecting to the database and prepare to inject the sql statement
+
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
         try (Connection conn = getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             //Fill the sql insertion with user data

@@ -8,14 +8,16 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
 
+import javax.swing.SwingUtilities;
+
 public class Server {
-    private static ServerSocket serverSocket;
+    public static ServerSocket serverSocket;
     private ExecutorService pool;
     private Map<String, ClientHandler> activeUsers;
     public static int port_number; //the server should have a well known port number
 
     public static void main(String[] args) {
-        ServerConfig.PORT_NUMBER = Integer.parseInt(args[0]); // Take server port as an argument in the CLI
+        int port_number = Integer.parseInt(args[0]); //taking the port number from the cmd line
         try {  
             Server server = new Server(port_number);
             server.start();
@@ -31,7 +33,9 @@ public class Server {
     }
 
     public void start() {
-        System.out.println("Server started on port number: " + ServerConfig.PORT_NUMBER); //serverSocket.getLocalPort()
+        port_number = serverSocket.getLocalPort();
+        System.out.println("Server started on port number: " + port_number); //serverSocket.getLocalPort()
+        sendPortNumber();
         try {
             while (true) {
                 //Handling multiple clients
@@ -39,14 +43,12 @@ public class Server {
                 System.out.println("A new client is connected : " + clientSocket);
 
                 System.out.println("Assigning new thread for this client");
-                ClientHandler clientHandler = new ClientHandler(clientSocket, serverSocket);
+                ClientHandler clientHandler = new ClientHandler(clientSocket);
                 pool.execute(clientHandler);
             }
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            stop();
-        }
+        } 
     }
 
     //function to stop the server from running
@@ -61,8 +63,20 @@ public class Server {
         }
     }
 
-    public static int get_server_port_number() {
-        System.out.println("Server port number: " + port_number);
-        return port_number;
+    //function to send the port number to the client
+    public void sendPortNumber() {
+        //create a temporary server socket to send the port number to the client
+        try {
+            ServerSocket tempServerSocket = new ServerSocket(5987);
+            //send the port number to the client
+            Socket tempSocket = tempServerSocket.accept();
+            DataOutputStream output = new DataOutputStream(tempSocket.getOutputStream());
+            output.writeInt(serverSocket.getLocalPort());
+            output.flush();
+            tempSocket.close();
+            tempServerSocket.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

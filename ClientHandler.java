@@ -11,25 +11,27 @@ import java.net.Socket;
 
 public class ClientHandler implements Runnable  { //Implementing logic of server handling one client
     
-    private Socket clientSocket = null;
-    private ServerSocket serverSocket = null;
+    private Socket clientSocket;
     ObjectInputStream serverInput; 
     ObjectOutputStream serverOutput; 
     //private String userName;
 
-    public ClientHandler(Socket client, ServerSocket server) {
+    public ClientHandler(Socket client) {
         // Initialize client-server connection
         this.clientSocket = client;
-        this.serverSocket = server;
+        try {
+        serverInput = new ObjectInputStream(clientSocket.getInputStream());
+        serverOutput = new ObjectOutputStream(clientSocket.getOutputStream());
+        } catch (Exception e){
+            e.printStackTrace();
+        }
         System.out.println("Connection with server established...");
+        run();
     }
 
     @Override
     public void run() {
         try {
-            ObjectInputStream serverInput = new ObjectInputStream(clientSocket.getInputStream());
-            ObjectOutputStream serverOutput = new ObjectOutputStream(clientSocket.getOutputStream());
-            
             Object receivedObject;
             while ((receivedObject = serverInput.readObject()) != null) {
                 if (receivedObject instanceof String) {
@@ -52,13 +54,7 @@ public class ClientHandler implements Runnable  { //Implementing logic of server
             }
         } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            closeConnections();
-            // if (userName != null) {
-            //     server.removeUser(userName);
-            //     server.broadcastMessage(userName + " has logged out.", userName, false);
-            // }
-        }
+        } 
     }
 
     //function to terminates connections

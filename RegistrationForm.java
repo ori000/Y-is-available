@@ -4,6 +4,8 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.DataInput;
+import java.io.DataInputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.InetAddress;
@@ -19,9 +21,9 @@ public class RegistrationForm extends JFrame {
     private JTextField regionTextField;
     private JTextField usernameField;
     private JPasswordField passwordField;
+    private int serverPortNumber;
 
     public RegistrationForm() {
-
         //GUI for registration form
         setTitle("Registration Form");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -85,27 +87,28 @@ public class RegistrationForm extends JFrame {
 
                 // User Registration
                 try {
+                    System.out.println("Attempting to get server's port number...");
+                    serverPortNumber = getServerPortNumber();
+                    System.out.println("Server port number is: " + serverPortNumber);
+
                     User user = new User(firstName, lastName, email, phoneNumber, region, password, username);
+
                     // 1 - Create a socket and connect to the server
                     InetAddress ip_address = InetAddress.getByName("localhost");
-                    System.out.println("SERVER PORT NUMBER: " + ServerConfig.PORT_NUMBER);
-                    System.out.println("Client socket created with IP: " + ip_address + " and port number: " + Server.port_number);
-                    Socket registration_socket = new Socket(ip_address, ServerConfig.PORT_NUMBER); 
-
-                    // 2 - Create output stream to send the user object to the server
+                    Socket registration_socket = new Socket(ip_address, serverPortNumber); 
+                    System.out.println("Client socket created with IP: " + ip_address + " and port number: " + serverPortNumber);
+                    
+                    // 2 - Create output-input stream to send-receive the user object to the server
                     ObjectOutputStream outputStream = new ObjectOutputStream(registration_socket.getOutputStream());
+                    ObjectInputStream inputStream = new ObjectInputStream(registration_socket.getInputStream());
 
                     // 3 - Send the User object to the server and tell the server to register
                     outputStream.writeObject("REGISTER");
                     outputStream.writeObject(user);
                     outputStream.flush();
-
-                    // 4 - Close the streams and socket
                     outputStream.close();
+                    inputStream.close();
                     registration_socket.close();
-
-                    // 5 - Create an ObjectInputStream to read the response from the server
-                    ObjectInputStream inputStream = new ObjectInputStream(registration_socket.getInputStream());
 
                     // Read the response from the server
                     boolean isRegistered = inputStream.readBoolean();
@@ -176,6 +179,19 @@ public class RegistrationForm extends JFrame {
         button.setForeground(Color.WHITE);
         button.setFont(font);
         button.setBorder(new EmptyBorder(5, 15, 5, 15));
+    }
+
+    public int getServerPortNumber() {
+        try {
+            Socket tsocket = new Socket(InetAddress.getByName("localhost"), 5987);
+            DataInputStream tinput = new DataInputStream(tsocket.getInputStream());
+            int port_numb = tinput.readInt();
+            tinput.close();
+            return port_numb;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return -1;
     }
 
     public static void main(String[] args) {
