@@ -1,28 +1,33 @@
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.Properties;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-
-
+    
 
 public class DatabaseConnector {
+    
 
-    //Get the connection to the database
     public static Connection getConnection() throws SQLException {
-        Env env = new Env(); //data structure containing info about the database connection MySQL
-        String URL = env.getUrl(); 
-        String USER = env.getUsername(); 
-        String PASSWORD = env.getPassword(); 
-        return DriverManager.getConnection(URL, USER, PASSWORD);
+        Env env = new Env();
+        Connection conn = null;
+        String URL = env.getUrl();
+        String USER = env.getUsername();
+        String PASSWORD = env.getPassword();
+
+        try {
+            //Class.forName("com.mysql.cj.jdbc.Driver");
+            conn = DriverManager.getConnection(URL, USER, PASSWORD);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new SQLException("Failed to connect to the database: " + e.getMessage());
+        }
+        return conn;
     }
+
 
     //Register a new user, return true if new user is added successfully to the database
     public static boolean registerUser (User user) throws NoSuchAlgorithmException {
-    
         String firstName = user.getFirstName();
         String lastName = user.getLastName();
         String email = user.getEmail();
@@ -32,14 +37,8 @@ public class DatabaseConnector {
         String username = user.getUsername();
 
         String sql = "INSERT INTO users (first_name, last_name, email, phone_number, region, password, username) VALUES (?, ?, ?, ?, ?, ?, ?)";
-
         //Connecting to the database and prepare to inject the sql statement
 
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        }
         try (Connection conn = getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
             //Fill the sql insertion with user data

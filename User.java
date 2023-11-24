@@ -1,5 +1,4 @@
 //new User(firstName, lastName, email, phoneNumber, region, password, username);
-
 import java.io.Serializable;
 
 public class User implements Serializable {
