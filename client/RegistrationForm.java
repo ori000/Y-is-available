@@ -5,6 +5,12 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.security.NoSuchAlgorithmException;
 
 public class RegistrationForm extends JFrame {
@@ -16,6 +22,7 @@ public class RegistrationForm extends JFrame {
     private JTextField regionTextField;
     private JTextField usernameField;
     private JPasswordField passwordField;
+    private int serverPortNumber;
 
     public RegistrationForm() {
         setTitle("Registration Form");
@@ -77,20 +84,37 @@ public class RegistrationForm extends JFrame {
                 String region = regionTextField.getText();
                 String password = new String(passwordField.getPassword());
                 String username = usernameField.getText();
+                User user = new User(firstName, lastName, email, phoneNumber, region, password, username);
 
                 // Call the method to register the user (You need to implement this method)
-                boolean isRegistered = false;
+                // User Registration
                 try {
-                    isRegistered = DatabaseConnector.registerUser(firstName, lastName, email, phoneNumber, region, password, username);
-                } catch (NoSuchAlgorithmException e1) {
-                    e1.printStackTrace();
-                }
+                    // 1 - Create a socket and connect to the server
+                    ClientSocket client_socket = new ClientSocket();
+                    System.out.println("Client socket created with IP: " + client_socket.client_ip_address + " and sending to port number: " + ClientSocket.client_port_number);
+                    
+                    // 2 - Create output-input stream to send-receive the user object to the server
+                    ObjectOutputStream outputStream = new ObjectOutputStream(client_socket.getOutputStream());
+                    ObjectInputStream inputStream = new ObjectInputStream(client_socket.getInputStream());
 
-                if (isRegistered) {
-                    JOptionPane.showMessageDialog(RegistrationForm.this, "Registration Successful");
-                } else {
-                    JOptionPane.showMessageDialog(RegistrationForm.this, "Registration Failed", "Error", JOptionPane.ERROR_MESSAGE);
-                }
+                    // 3 - Send the User object to the server and tell the server to register
+                    outputStream.writeObject("REGISTER");
+                    outputStream.writeObject(user);
+                    System.out.println("Info sent...");
+
+                    // Read the response from the server
+                    boolean isRegistered = inputStream.readBoolean();
+                    
+                    if (isRegistered) {
+                        JOptionPane.showMessageDialog(null, "Registration Successful");
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Registration Failed", "Error", JOptionPane.ERROR_MESSAGE);                
+                    }
+                } 
+                catch (Exception e1) {
+                    e1.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "An unexpected error occurred", "Error", JOptionPane.ERROR_MESSAGE);
+                } 
             }
         });
 

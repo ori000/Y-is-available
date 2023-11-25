@@ -18,7 +18,15 @@ public class DatabaseConnector {
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 
-    public static boolean registerUser(String firstName, String lastName, String email, String phoneNumber, String region, String password, String username) throws NoSuchAlgorithmException {
+    public static boolean registerUser(User user) throws NoSuchAlgorithmException {
+        String firstName = user.getFirstName(),
+                lastName = user.getLastName(),
+                email = user.getEmail(),
+                phoneNumber = user.getPhoneNumber(),
+                region = user.getRegion(),
+                password = user.getPassword(),
+                username = user.getUsername();
+                
         String sql = "INSERT INTO users (first_name, last_name, email, phone_number, region, password, username) VALUES (?, ?, ?, ?, ?, ?, ?)";
     
         try (Connection conn = getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -31,8 +39,10 @@ public class DatabaseConnector {
             pstmt.setString(7, username);
     
             int affectedRows = pstmt.executeUpdate();
+            if (affectedRows > 0) System.out.println("User registered successfully!");
             return affectedRows > 0;
         } catch (SQLException e) {
+            System.out.println("User registration failed!");
             e.printStackTrace();
             return false;
         }

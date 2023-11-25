@@ -15,6 +15,7 @@ public class Server {
     private ExecutorService pool;
     private Map<String, ClientHandler> activeUsers;
 
+
     public Server(int port) throws IOException {
         serverSocket = new ServerSocket(port);
         pool = Executors.newFixedThreadPool(10);
@@ -23,6 +24,7 @@ public class Server {
 
     public void start() {
         System.out.println("Server started on port " + serverSocket.getLocalPort());
+        sendPortNumber(); //send the port number to the client
         try {
             while (true) {
                 Socket clientSocket = serverSocket.accept();
@@ -47,66 +49,27 @@ public class Server {
         }
     }
 
-    public synchronized void broadcastMessage(String message, String senderUsername, boolean isPrivate) {
-        activeUsers.forEach((username, clientHandler) -> {
-            if (!isPrivate || clientHandler.isFriend(senderUsername)) {
-                clientHandler.sendMessage(message);
-            }
-        });
-    }
-
-    public boolean authenticateUser(String username, String password) {
-        Connection conn = null;
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-
+    //function to send the port number to the client
+    public void sendPortNumber() {
+        //create a temporary server socket to send the port number to the client
         try {
-            conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/yApp", "username", "password");
-            String sql = "SELECT password FROM users WHERE email = ?";
-            stmt = conn.prepareStatement(sql);
-            stmt.setString(1, username);
-
-            rs = stmt.executeQuery();
-
-            if (rs.next()) {
-                String storedHash = rs.getString("password");
-                return verifyPassword(password, storedHash);
-            }
-            return false;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        } finally {
-            // Close all connections
-            try {
-                if (rs != null) rs.close();
-                if (stmt != null) stmt.close();
-                if (conn != null) conn.close();
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
-        }
-    }
-
-    private boolean verifyPassword(String password, String storedHash) {
-        try {
-            return BCrypt.checkpw(password, storedHash);
+            ServerSocket tempServerSocket = new ServerSocket(5987);
+            //send the port number to the client
+            Socket tempSocket = tempServerSocket.accept();
+            DataOutputStream output = new DataOutputStream(tempSocket.getOutputStream());
+            output.writeInt(serverSocket.getLocalPort());
+            output.flush();
+            tempSocket.close();
+            tempServerSocket.close();
         } catch (Exception e) {
             e.printStackTrace();
-            return false;
         }
-    }
-
-    public void addUser(String username, ClientHandler clientHandler) {
-        activeUsers.put(username, clientHandler);
-    }
-
-    public void removeUser(String username) {
-        activeUsers.remove(username);
     }
 
     public static void main(String[] args) {
-        int port = Integer.parseInt(args[0]); // Take server port as an argument in the CLI
+        Scanner scan = new Scanner(System.in);
+        System.out.print("Enter server's port number: ");
+        int port = scan.nextInt(); // Take server port as an argument in the CLI
         try {
             Server server = new Server(port);
             server.start();
