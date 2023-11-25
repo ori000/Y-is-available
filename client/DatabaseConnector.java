@@ -14,13 +14,14 @@ public class DatabaseConnector {
         String URL = env.getUrl();
         String USER = env.getUsername();
         String PASSWORD = env.getPassword();
-        
+
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 
-    public static boolean registerUser(String firstName, String lastName, String email, String phoneNumber, String region, String password, String username) throws NoSuchAlgorithmException {
+    public static boolean registerUser(String firstName, String lastName, String email, String phoneNumber,
+            String region, String password, String username) throws NoSuchAlgorithmException {
         String sql = "INSERT INTO users (first_name, last_name, email, phone_number, region, password, username) VALUES (?, ?, ?, ?, ?, ?, ?)";
-    
+
         try (Connection conn = getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, firstName);
             pstmt.setString(2, lastName);
@@ -29,7 +30,7 @@ public class DatabaseConnector {
             pstmt.setString(5, region);
             pstmt.setString(6, hashPassword(password)); // Hash the password
             pstmt.setString(7, username);
-    
+
             int affectedRows = pstmt.executeUpdate();
             return affectedRows > 0;
         } catch (SQLException e) {
@@ -40,10 +41,10 @@ public class DatabaseConnector {
 
     public static boolean validateLogin(String email, String password) {
         String sql = "SELECT password FROM users WHERE email = ?";
-    
+
         try (Connection conn = getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, email);
-    
+
             try (ResultSet resultSet = pstmt.executeQuery()) {
                 if (resultSet.next()) {
                     String storedPassword = resultSet.getString("password");
@@ -57,8 +58,7 @@ public class DatabaseConnector {
             return false;
         }
     }
-    
-    
+
     private static String hashPassword(String password) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         md.update(password.getBytes());

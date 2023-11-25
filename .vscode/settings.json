@@ -2,6 +2,7 @@
     "java.project.referencedLibraries": [
         "lib/**/*.jar",
         "server\\lib\\javax.mail.jar",
-        "server\\lib\\mysql-connector-j-8.0.32.jar"
+        "server\\lib\\mysql-connector-j-8.0.32.jar",
+        "lib/javafx-sdk-21.0.1/lib/*.jar"
     ]
 }
