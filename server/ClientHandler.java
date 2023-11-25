@@ -1,6 +1,7 @@
 import java.io.*;
 import java.net.Socket;
-// Other imports...
+import Shared.Dtos.*;
+import Shared.Requests.*;
 
 public class ClientHandler implements Runnable {
     private Socket clientSocket;
@@ -26,18 +27,28 @@ public class ClientHandler implements Runnable {
             Object receivedObject;
             System.out.println("Handling a client...");
             while ((receivedObject = serverInput.readObject()) != null) {
+                System.out.println(receivedObject);
                 if (receivedObject instanceof String) {
                     String command = (String) receivedObject;
-                    if (command.equals("REGISTER")) {
-                        System.out.println("User Registration...");
-                        User user = (User) serverInput.readObject();
-                        registered = DatabaseConnector.registerUser(user);
-                        serverOutput.writeBoolean(registered);
-                        serverOutput.flush();
-                    } else if (command.equals("LOGIN")){
-                        // Handle LOGIN command
+                    switch (command) {
+                        case "REGISTER":
+                            System.out.println("User Registration...");
+                            RegisterationRequest registerationRequest = (RegisterationRequest) serverInput.readObject();
+                            registered = DatabaseConnector.registerUser(registerationRequest);
+                            serverOutput.writeBoolean(registered);
+                            serverOutput.flush();
+                            break;
+                        case "LOGIN":
+                            System.out.println("User Login...");
+                            LoginRequest loginRequest = (LoginRequest) serverInput.readObject();
+                            boolean isValid = DatabaseConnector.validateLogin(loginRequest);
+                            serverOutput.writeBoolean(isValid);
+                            serverOutput.flush();
+                            break;
+                    
+                        default:
+                            break;
                     }
-                    // Handle other commands...
                 }
             }
         } catch (Exception e) {

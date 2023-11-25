@@ -3,7 +3,7 @@ public class Env {
     private String url;
     private String username;
     private void setPassword(){
-        this.password = "root";
+        this.password = "your password";
     }
     public String getPassword(){
         setPassword();

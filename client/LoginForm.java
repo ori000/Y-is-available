@@ -1,9 +1,14 @@
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+
+import Shared.Requests.LoginRequest;
+import Shared.Requests.RegisterationRequest;
 
 import java.awt.*;
 
@@ -12,7 +17,7 @@ class LoginForm extends JFrame {
     private JTextField emailTextField;
     private JPasswordField passwordField;
 
-    public LoginForm(RegistrationForm registrationForm) {
+    public LoginForm(RegistrationForm registrationForm, ClientSocket client_socket, ObjectOutputStream outputStream, ObjectInputStream inputStream) {
         setTitle("Login Form");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new GridBagLayout());
@@ -51,16 +56,37 @@ class LoginForm extends JFrame {
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                // Fetch data from text fields including the password
                 String email = emailTextField.getText();
                 String password = new String(passwordField.getPassword());
+                
+                LoginRequest loginRequest = new LoginRequest(email,password);
 
-                if (DatabaseConnector.validateLogin(email, password)) {
-                    // Grant access
-                    JOptionPane.showMessageDialog(LoginForm.this, "Access Granted");
-                } else {
-                    // Wrong input information
-                    JOptionPane.showMessageDialog(LoginForm.this, "Wrong Input Information", "Error", JOptionPane.ERROR_MESSAGE);
-                }
+                // User Registration
+                try {
+                    // 1 - Create a socket and connect to the server
+                    System.out.println("Client socket created with IP: " + client_socket.client_ip_address + " and sending to port number: " + ClientSocket.client_port_number);
+                    
+                    
+
+                    // 3 - Send the User object to the server and tell the server to register
+                    outputStream.writeObject("LOGIN");
+                    outputStream.writeObject(loginRequest);
+                    System.out.println("Info sent...");
+
+                    // Read the response from the server
+                    boolean isValid = inputStream.readBoolean();
+                    
+                    if (isValid) {
+                        JOptionPane.showMessageDialog(null, "Login Successful");
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Login Failed", "Error", JOptionPane.ERROR_MESSAGE);                
+                    }
+                } 
+                catch (Exception e1) {
+                    e1.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "An unexpected error occurred", "Error", JOptionPane.ERROR_MESSAGE);
+                } 
             }
         });
 

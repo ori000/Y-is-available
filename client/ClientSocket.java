@@ -7,7 +7,8 @@ import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
 
-public class ClientSocket {
+// make one single instane
+public class ClientSocket{
     InetAddress client_ip_address; //client IP address
     static int client_port_number; //host port number
     Socket socket; //client socket
@@ -18,6 +19,7 @@ public class ClientSocket {
             this.client_ip_address = InetAddress.getByName("localhost");
             client_port_number = getServerPortNumber();
             this.socket = new Socket(client_ip_address, client_port_number);
+            this.socket.setKeepAlive(true);
         } catch (IOException e) {
             e.printStackTrace();
         }
