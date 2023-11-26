@@ -10,6 +10,7 @@ public class PostsPage extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
         addPosts();
+        this.setVisible(true);
     }
 
     private void addPosts() {

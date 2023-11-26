@@ -1,5 +1,4 @@
 //Represents a client socket that connects to the server socket
-
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,6 +10,7 @@ import java.net.Socket;
 public class ClientSocket{
     InetAddress client_ip_address; //client IP address
     static int client_port_number; //host port number
+    static String userToken = ""; //user token
     Socket socket; //client socket
 
     //create the client socket
@@ -60,5 +60,13 @@ public class ClientSocket{
 
     public void close() throws IOException {
         this.socket.close();
+    }
+
+    public String getUserToken() {
+        return userToken;
+    }
+
+    public void setUserToken(String token) {
+        userToken = token;
     }
 }

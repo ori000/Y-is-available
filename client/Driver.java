@@ -10,7 +10,7 @@ public class Driver {
         // create a socket
         ClientSocket socket = new ClientSocket();
 
-        // 2 - Create output-input stream to send-receive the user object to the server
+        // // 2 - Create output-input stream to send-receive the user object to the server
         ObjectOutputStream outputStream = new ObjectOutputStream(socket.getOutputStream());
         ObjectInputStream inputStream = new ObjectInputStream(socket.getInputStream());
 
@@ -18,5 +18,8 @@ public class Driver {
 
         // run registration form
         new RegistrationForm(socket, outputStream, inputStream);
+        
+        // PostsPage postsPage = new PostsPage();
+        // new MainPage(socket, outputStream, inputStream);
     }
 }

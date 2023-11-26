@@ -5,10 +5,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 
 import Shared.Requests.LoginRequest;
-import Shared.Requests.RegisterationRequest;
 
 import java.awt.*;
 
@@ -34,17 +32,13 @@ class LoginForm extends JFrame {
 
         GridBagConstraints constraints = new GridBagConstraints();
         constraints.fill = GridBagConstraints.HORIZONTAL;
-        constraints.insets = new Insets(30, 10, 10, 10);
-
-        // Customizing the text fields and buttons
-        Font font = new Font("Arial", Font.PLAIN, 14);
-        Color buttonColor = new Color(100, 150, 220); // Custom button color
+        constraints.insets = new Insets(10, 0, 10, 0);
 
         emailTextField = new JTextField(20);
         passwordField = new JPasswordField(20);
 
-        emailTextField.setFont(font);
-        passwordField.setFont(font);
+        Styles.styleTextField(emailTextField);
+        Styles.styleTextField(passwordField);
 
         addComponent(new JLabel("E-mail:"), constraints, 0, 0);
         addComponent(emailTextField, constraints, 1, 0);
@@ -52,7 +46,7 @@ class LoginForm extends JFrame {
         addComponent(passwordField, constraints, 1, 1);
 
         JButton loginButton = new JButton("Login");
-        styleButton(loginButton, buttonColor, font);
+        Styles.styleButton(loginButton);
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -75,10 +69,13 @@ class LoginForm extends JFrame {
                     System.out.println("Info sent...");
 
                     // Read the response from the server
-                    boolean isValid = inputStream.readBoolean();
+                    String token = (String) inputStream.readObject();
                     
-                    if (isValid) {
+                    if (token.length() > 1) {
+                        client_socket.setUserToken(token);
                         JOptionPane.showMessageDialog(null, "Login Successful");
+                        new MainPage(client_socket, outputStream, inputStream);
+                        LoginForm.this.dispose();
                     } else {
                         JOptionPane.showMessageDialog(null, "Login Failed", "Error", JOptionPane.ERROR_MESSAGE);                
                     }
@@ -92,7 +89,7 @@ class LoginForm extends JFrame {
 
         // Back Button
         JButton backButton = new JButton("Back");
-        styleButton(backButton, buttonColor, font);
+        Styles.styleButton(backButton);
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -126,7 +123,7 @@ class LoginForm extends JFrame {
         add(loginButton, constraints);
 
         JButton forgotPasswordButton = new JButton("Forgot Password");
-        styleButton(forgotPasswordButton, buttonColor, font);
+        Styles.styleButton(forgotPasswordButton);
         forgotPasswordButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -153,12 +150,5 @@ class LoginForm extends JFrame {
         constraints.gridx = x;
         constraints.gridy = y;
         add(component, constraints);
-    }
-
-    private void styleButton(JButton button, Color color, Font font) {
-        button.setBackground(color);
-        button.setForeground(Color.WHITE);
-        button.setFont(font);
-        button.setBorder(new EmptyBorder(5, 15, 5, 15));
     }
 }

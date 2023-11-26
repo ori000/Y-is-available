@@ -13,7 +13,7 @@ public class InteractionViewPage extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         getContentPane().setBackground(BACKGROUND_COLOR);
         setLayout(new GridLayout(1, 2, 10, 10)); // Add horizontal and vertical gaps
-        initializeUI();
+        initializeUI();this.setVisible(true);
     }
 
     private void initializeUI() {

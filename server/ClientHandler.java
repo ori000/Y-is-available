@@ -1,5 +1,7 @@
 import java.io.*;
 import java.net.Socket;
+import java.util.List;
+
 import Shared.Dtos.*;
 import Shared.Requests.*;
 
@@ -41,8 +43,51 @@ public class ClientHandler implements Runnable {
                         case "LOGIN":
                             System.out.println("User Login...");
                             LoginRequest loginRequest = (LoginRequest) serverInput.readObject();
-                            boolean isValid = DatabaseConnector.validateLogin(loginRequest);
-                            serverOutput.writeBoolean(isValid);
+                            String token = DatabaseConnector.validateLogin(loginRequest);
+                            serverOutput.writeObject(token);
+                            serverOutput.flush();
+                            break;
+                        case "GET_POSTS":
+                            System.out.println("Getting Posts...");
+                            token = (String) serverInput.readObject();
+                            List<UserDto> friendsList = DatabaseConnector.getFriends(token);
+                            List<UserDto> postsResponse = DatabaseConnector.getPostsCommentsLikesForUsers(friendsList);
+                            serverOutput.writeObject(postsResponse);
+                            serverOutput.flush();
+                            break;
+                        case "GET_USER":
+                            System.out.println("Getting User...");
+                            String usernameToGet = (String) serverInput.readObject();
+                            UserDto userResponse = DatabaseConnector.getUser(usernameToGet);
+                            serverOutput.writeObject(userResponse);
+                            serverOutput.flush();
+                            break;
+                        case "GET_FRIENDS":
+                            System.out.println("Getting Friends...");
+                            String usernameToGetFriends = (String) serverInput.readObject();
+                            List<UserDto> friendsResponse = DatabaseConnector.getFriends(usernameToGetFriends);
+                            serverOutput.writeObject(friendsResponse);
+                            serverOutput.flush();
+                            break;
+                        case "ADD_POST":
+                            System.out.println("Adding Post...");
+                            BaseRequest<AddPostRequest> addPostRequest = (BaseRequest<AddPostRequest>) serverInput.readObject();
+                            boolean addPostResponse = DatabaseConnector.addPost(addPostRequest);
+                            serverOutput.writeObject(addPostResponse);
+                            serverOutput.flush();
+                            break;
+                        case "ADD_COMMENT":
+                            System.out.println("Adding Comment...");
+                            BaseRequest<AddCommentRequest> addCommentRequest = (BaseRequest<AddCommentRequest>) serverInput.readObject();
+                            boolean addCommentResponse = DatabaseConnector.addComment(addCommentRequest);
+                            serverOutput.writeObject(addCommentResponse);
+                            serverOutput.flush();
+                            break;
+                        case "LOGOUT":
+                            System.out.println("Logging out...");
+                            String usernameToLogout = (String) serverInput.readObject();
+                            DatabaseConnector.logout(usernameToLogout);
+                            serverOutput.writeObject(true);
                             serverOutput.flush();
                             break;
                     

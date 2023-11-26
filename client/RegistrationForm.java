@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -36,9 +37,6 @@ public class RegistrationForm extends JFrame {
         constraints.fill = GridBagConstraints.HORIZONTAL;
         constraints.insets = new Insets(30, 10, 10, 10);
 
-        Font font = new Font("Arial", Font.BOLD, 14);
-        Color buttonColor = new Color(100, 150, 220); // Custom button color
-
         firstNameTextField = new JTextField(20);
         lastNameTextField = new JTextField(20);
         emailTextField = new JTextField(20);
@@ -46,6 +44,14 @@ public class RegistrationForm extends JFrame {
         regionTextField = new JTextField(20);
         passwordField = new JPasswordField(20);
         usernameField = new JTextField(20);
+
+        Styles.styleTextField(firstNameTextField);
+        Styles.styleTextField(lastNameTextField);
+        Styles.styleTextField(emailTextField);
+        Styles.styleTextField(phoneNumberTextField);
+        Styles.styleTextField(regionTextField);
+        Styles.styleTextField(usernameField);
+        Styles.styleTextField(passwordField);
 
 
         addComponent(new JLabel("First Name:"), constraints, 0, 1);
@@ -65,7 +71,7 @@ public class RegistrationForm extends JFrame {
 
 
         JButton signUpButton = new JButton("Sign Up");
-        styleButton(signUpButton, buttonColor, font);
+        Styles.styleButton(signUpButton);
         signUpButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -106,7 +112,7 @@ public class RegistrationForm extends JFrame {
         });
 
         JButton loginButton = new JButton("Login");
-        styleButton(loginButton, buttonColor, font);
+        Styles.styleButton(loginButton);
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -124,8 +130,9 @@ public class RegistrationForm extends JFrame {
         constraints.gridy = 9;
         add(loginButton, constraints);
 
+        Styles.styleFrame(this);
+
         pack();
-        setResizable(false);
         setLocationRelativeTo(null);
         setVisible(true);
     }
@@ -152,11 +159,5 @@ public class RegistrationForm extends JFrame {
         }
     }
 
-    private void styleButton(JButton button, Color color, Font font) {
-        button.setBackground(color);
-        button.setForeground(Color.WHITE);
-        button.setFont(font);
-        button.setBorder(new EmptyBorder(5, 15, 5, 15));
-    }
 
 }
