@@ -310,6 +310,33 @@ public class DatabaseConnector {
         return friends;
     }
 
+    public static boolean addNewPeople(BaseRequest<AddNewPeopleRequest> addNewPeopleRequest) {
+        Env env = new Env();
+        String URL = env.getUrl();
+        String USER = env.getUsername();
+        String PASSWORD = env.getPassword();
+
+        String query = "INSERT INTO Friendships (user1, user2) VALUES (?, ?)";
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+            PreparedStatement stmt = conn.prepareStatement(query)) {
+
+        var user_id = getUser(addNewPeopleRequest.getToken()).getUserId();
+        
+        stmt.setInt(1, user_id);
+        stmt.setInt(2, addNewPeopleRequest.getPayLoad().getUser2ID());
+
+        int affectedRows = stmt.executeUpdate();
+        if (affectedRows > 0) System.out.println("Friend added successfully!");
+        return affectedRows > 0;
+
+        } catch (SQLException e) {
+            System.out.println("Friend addition failed!");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     public static List<UserDto> getPostsCommentsLikesForUsers(List<UserDto> users) {
         List<UserDto> result = users;
 
@@ -359,6 +386,48 @@ public class DatabaseConnector {
             e.printStackTrace();
         }
         return result;
+    }
+
+    //get the list of new people
+    public static List<UserDto> getNewPeople(String token) {
+
+        String query = "SELECT u.user_id, u.first_name, u.last_name, u.username, u.email, u.region, u.phone_number " +
+                       "FROM Users u " +
+                       "JOIN Friendships f ON (u.user_id = f.user1 OR u.user_id = f.user2) " +
+                       "WHERE (f.user1 != ? OR f.user2 != ?)";
+
+        List<UserDto> newPeople = new ArrayList<>();
+
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            
+            int user_id = getUser(token).getUserId();
+            
+            stmt.setInt(1, user_id);
+            stmt.setInt(2, user_id);
+            // stmt.setString(3, username);
+
+            try (ResultSet resultSet = stmt.executeQuery()) {
+                while (resultSet.next()) {
+                    UserDto newPerson = new UserDto(
+                        resultSet.getInt("user_id"),
+                        resultSet.getString("first_name"),
+                        resultSet.getString("last_name"),
+                        resultSet.getString("username"),
+                        resultSet.getString("email"),
+                        null,
+                        resultSet.getString("region"),
+                        resultSet.getString("phone_number"),
+                        null);
+
+                    newPeople.add(newPerson);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        System.out.println(newPeople.size());
+        return newPeople;
     }
 
     private static List<CommentDto> getCommentsForPost(Connection conn, int userId, int postId) throws SQLException {

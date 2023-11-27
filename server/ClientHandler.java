@@ -83,6 +83,20 @@ public class ClientHandler implements Runnable {
                             serverOutput.writeObject(addCommentResponse);
                             serverOutput.flush();
                             break;
+                        case "GET_NEW_PEOPLE":
+                            System.out.println("Getting New People...");
+                            String usernameToGetNewPeople = (String) serverInput.readObject();
+                            List<UserDto> getNewPeopleResponse = DatabaseConnector.getNewPeople(usernameToGetNewPeople);
+                            serverOutput.writeObject(getNewPeopleResponse);
+                            serverOutput.flush();
+                            break;
+                        case "ADD_NEW_PEOPLE":
+                            System.out.println("Adding Friend...");
+                            BaseRequest<AddNewPeopleRequest> addNewPeopleRequest = (BaseRequest<AddNewPeopleRequest>) serverInput.readObject();
+                            boolean addNewPeopleResponse = DatabaseConnector.addNewPeople(addNewPeopleRequest);
+                            serverOutput.writeObject(addNewPeopleResponse);
+                            serverOutput.flush();
+                            break;
                         case "LOGOUT":
                             System.out.println("Logging out...");
                             String usernameToLogout = (String) serverInput.readObject();

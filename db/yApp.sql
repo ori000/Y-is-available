@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS Users (
     password VARCHAR(255) NOT NULL,
     region VARCHAR(255),
     phone_number VARCHAR(20),
-    token VARCHAR(255),
+    token VARCHAR(255)
 );
 
 -- Posts table
@@ -62,3 +62,6 @@ CREATE TABLE IF NOT EXISTS Friendships (
     FOREIGN KEY (user1) REFERENCES Users(user_id),
     FOREIGN KEY (user2) REFERENCES Users(user_id)
 );
+
+SELECT * FROM USERS;
+SELECT * FROM POSTS;
