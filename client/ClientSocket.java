@@ -72,4 +72,16 @@ public class ClientSocket{
     public void setUserToken(String token) {
         userToken = token;
     }
+
+    public UserDto getUserInfoByToken(ObjectOutputStream outputStream, ObjectInputStream inputStream) {
+        try {
+            outputStream.writeObject("GET_USER");
+            outputStream.writeObject(userToken);
+            UserDto user = (UserDto) inputStream.readObject();
+            return user;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

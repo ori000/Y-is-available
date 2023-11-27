@@ -176,12 +176,12 @@ class PostPanel extends JPanel {
                 String comment = commentTextArea.getText();
 
                 AddCommentRequest addCommentRequest = new AddCommentRequest(post.getPostId(), comment);
-                BaseRequest<AddCommentRequest> commentRequest = new BaseRequest(socket.getUserToken(), addCommentRequest);
+                BaseRequest<AddCommentRequest> commentRequest = new BaseRequest(client_socket.getUserToken(), addCommentRequest);
 
                 // User Registration
                 try {
                     // 1 - Create a socket and connect to the server
-                    System.out.println("Client socket created with IP: " + socket.client_ip_address + " and sending to port number: " + ClientSocket.client_port_number);
+                    System.out.println("Client socket created with IP: " + client_socket.client_ip_address + " and sending to port number: " + ClientSocket.client_port_number);
 
                     // 3 - Send the User object to the server and tell the server to register
                     outputStream.writeObject("ADD_COMMENT");
