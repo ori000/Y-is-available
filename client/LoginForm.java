@@ -15,7 +15,8 @@ class LoginForm extends JFrame {
     private JTextField emailTextField;
     private JPasswordField passwordField;
 
-    public LoginForm(RegistrationForm registrationForm, ClientSocket client_socket, ObjectOutputStream outputStream, ObjectInputStream inputStream) {
+    public LoginForm(RegistrationForm registrationForm, ClientSocket client_socket, ObjectOutputStream outputStream,
+            ObjectInputStream inputStream) {
         setTitle("Login Form");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new GridBagLayout());
@@ -53,15 +54,14 @@ class LoginForm extends JFrame {
                 // Fetch data from text fields including the password
                 String email = emailTextField.getText();
                 String password = new String(passwordField.getPassword());
-                
-                LoginRequest loginRequest = new LoginRequest(email,password);
+
+                LoginRequest loginRequest = new LoginRequest(email, password);
 
                 // User Registration
                 try {
                     // 1 - Create a socket and connect to the server
-                    System.out.println("Client socket created with IP: " + client_socket.client_ip_address + " and sending to port number: " + ClientSocket.client_port_number);
-                    
-                    
+                    System.out.println("Client socket created with IP: " + client_socket.client_ip_address
+                            + " and sending to port number: " + ClientSocket.client_port_number);
 
                     // 3 - Send the User object to the server and tell the server to register
                     outputStream.writeObject("LOGIN");
@@ -70,20 +70,20 @@ class LoginForm extends JFrame {
 
                     // Read the response from the server
                     String token = (String) inputStream.readObject();
-                    
+
                     if (token.length() > 1) {
                         client_socket.setUserToken(token);
                         JOptionPane.showMessageDialog(null, "Login Successful");
-                        new MainPage(client_socket, outputStream, inputStream);
+                        new MainFrame(client_socket, outputStream, inputStream);
                         LoginForm.this.dispose();
                     } else {
-                        JOptionPane.showMessageDialog(null, "Login Failed", "Error", JOptionPane.ERROR_MESSAGE);                
+                        JOptionPane.showMessageDialog(null, "Login Failed", "Error", JOptionPane.ERROR_MESSAGE);
                     }
-                } 
-                catch (Exception e1) {
+                } catch (Exception e1) {
                     e1.printStackTrace();
-                    JOptionPane.showMessageDialog(null, "An unexpected error occurred", "Error", JOptionPane.ERROR_MESSAGE);
-                } 
+                    JOptionPane.showMessageDialog(null, "An unexpected error occurred", "Error",
+                            JOptionPane.ERROR_MESSAGE);
+                }
             }
         });
 
