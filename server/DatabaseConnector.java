@@ -42,12 +42,32 @@ public class DatabaseConnector {
             pstmt.setString(5, region);
             pstmt.setString(6, hashPassword(password)); // Hash the password
             pstmt.setString(7, username);
-    
+
+            addSelfFriend(username); // Add the user to be the friend of himself
+
             int affectedRows = pstmt.executeUpdate();
             if (affectedRows > 0) System.out.println("User registered successfully!");
             return affectedRows > 0;
         } catch (SQLException e) {
             System.out.println("User registration failed!");
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    // add a user to be the friend of himself
+    private static boolean addSelfFriend(String username) {
+        String sql = "INSERT INTO Friendships (user1, user2) VALUES (?, ?)";
+
+        try (Connection conn = getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, username);
+            pstmt.setString(2, username);
+
+            int affectedRows = pstmt.executeUpdate();
+            if (affectedRows > 0) System.out.println("User added successfully!");
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            System.out.println("User addition failed!");
             e.printStackTrace();
             return false;
         }
