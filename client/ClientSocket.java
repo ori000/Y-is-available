@@ -1,5 +1,8 @@
 //Represents a client socket that connects to the server socket
+
+import java.io.BufferedReader;
 import java.io.DataInputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -16,8 +19,8 @@ public class ClientSocket{
     //create the client socket
     public ClientSocket() {
         try {
-            this.client_ip_address = InetAddress.getByName("localhost");
             client_port_number = getServerPortNumber();
+            this.client_ip_address = InetAddress.getByName("localhost");
             this.socket = new Socket(client_ip_address, client_port_number);
             this.socket.setKeepAlive(true);
         } catch (IOException e) {
@@ -27,13 +30,9 @@ public class ClientSocket{
 
     //Get the Server's port number
     public int getServerPortNumber() {
-        try {
-            Socket tsocket = new Socket(InetAddress.getByName("localhost"), 5987);
-            DataInputStream tinput = new DataInputStream(tsocket.getInputStream());
-            int port_numb = tinput.readInt();
-            tinput.close();
-            return port_numb;
-        } catch (Exception e) {
+        try (BufferedReader reader = new BufferedReader(new FileReader("port.txt"))) {
+            return Integer.parseInt(reader.readLine());
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return -1;

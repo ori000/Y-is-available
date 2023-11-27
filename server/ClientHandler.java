@@ -12,7 +12,7 @@ public class ClientHandler implements Runnable {
 
     boolean registered;
 
-    public ClientHandler(Socket socket, Server server) {
+    public ClientHandler(Socket socket) {
         this.clientSocket = socket;
         try {
             // Initializing serverOutput first to ensure serverInput can read object headers sent by serverOutput
