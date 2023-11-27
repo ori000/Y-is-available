@@ -19,7 +19,7 @@ public class DatabaseConnector {
         String URL = env.getUrl();
         String USER = env.getUsername();
         String PASSWORD = env.getPassword();
-        
+
         return DriverManager.getConnection(URL, USER, PASSWORD);
     }
 
@@ -31,9 +31,9 @@ public class DatabaseConnector {
                 region = request.getRegion(),
                 password = request.getPassword(),
                 username = request.getUsername();
-                
+
         String sql = "INSERT INTO users (first_name, last_name, email, phone_number, region, password, username) VALUES (?, ?, ?, ?, ?, ?, ?)";
-    
+
         try (Connection conn = getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, firstName);
             pstmt.setString(2, lastName);
@@ -42,9 +42,10 @@ public class DatabaseConnector {
             pstmt.setString(5, region);
             pstmt.setString(6, hashPassword(password)); // Hash the password
             pstmt.setString(7, username);
-    
+
             int affectedRows = pstmt.executeUpdate();
-            if (affectedRows > 0) System.out.println("User registered successfully!");
+            if (affectedRows > 0)
+                System.out.println("User registered successfully!");
             return affectedRows > 0;
         } catch (SQLException e) {
             System.out.println("User registration failed!");
@@ -53,7 +54,7 @@ public class DatabaseConnector {
         }
     }
 
-    public static String validateLogin(LoginRequest request) throws InterruptedException{
+    public static String validateLogin(LoginRequest request) throws InterruptedException {
         String sql = "SELECT password FROM users WHERE email = ?";
 
         try (Connection conn = getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -66,7 +67,7 @@ public class DatabaseConnector {
                     System.out.println(storedPassword.equals(hashedPassword));
                     if (storedPassword.equals(hashedPassword)) {
                         return addToken(request.getEmail());
-                    }  // Compare the hashes
+                    } // Compare the hashes
                 }
                 return ""; // User not found
             }
@@ -86,7 +87,8 @@ public class DatabaseConnector {
             pstmt.setString(2, email);
 
             int affectedRows = pstmt.executeUpdate();
-            if (affectedRows > 0) System.out.println("Token added successfully!");
+            if (affectedRows > 0)
+                System.out.println("Token added successfully!");
             return token;
         } catch (SQLException e) {
             System.out.println("Token addition failed!");
@@ -101,15 +103,16 @@ public class DatabaseConnector {
         return uuid.toString();
     }
 
-    // invalidate user token by removing it from database   
-    private static void invalidateUserToken(String token){
+    // invalidate user token by removing it from database
+    private static void invalidateUserToken(String token) {
         String sql = "UPDATE users SET token = NULL WHERE token = ?";
 
-        try(Connection conn = getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)){
+        try (Connection conn = getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, token);
 
             int affectedRows = pstmt.executeUpdate();
-            if (affectedRows > 0) System.out.println("Token removed successfully!");
+            if (affectedRows > 0)
+                System.out.println("Token removed successfully!");
         } catch (SQLException e) {
             System.out.println("Token removal failed!");
             e.printStackTrace();
@@ -121,7 +124,6 @@ public class DatabaseConnector {
         invalidateUserToken(username);
     }
 
-     
     private static String hashPassword(String password) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
         md.update(password.getBytes());
@@ -133,40 +135,40 @@ public class DatabaseConnector {
         return sb.toString();
     }
 
-// region Edit User Information
-    
+    // region Edit User Information
+
     public static boolean editUser(BaseRequest<EditUserRequest> request) {
-            Env env = new Env();
-            String URL = env.getUrl();
-            String USER = env.getUsername();
-            String PASSWORD = env.getPassword();
-    
-            String query = "UPDATE Users SET first_name = ?, last_name = ?, email = ?, region = ?, phone_number = ? WHERE username = ?";
-    
-            try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+        Env env = new Env();
+        String URL = env.getUrl();
+        String USER = env.getUsername();
+        String PASSWORD = env.getPassword();
+
+        String query = "UPDATE Users SET first_name = ?, last_name = ?, email = ?, region = ?, phone_number = ? WHERE username = ?";
+
+        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
                 PreparedStatement stmt = conn.prepareStatement(query)) {
-                
-                EditUserRequest editUserRequest = request.getPayLoad();
 
-                stmt.setString(1, editUserRequest.getFirstName());
-                stmt.setString(2, editUserRequest.getLastName());
-                stmt.setString(3, editUserRequest.getEmail());
-                stmt.setString(4, editUserRequest.getRegion());
-                stmt.setString(5, editUserRequest.getPhoneNumber());
-                stmt.setString(6, editUserRequest.getUsername());
-    
-                int affectedRows = stmt.executeUpdate();
-                if (affectedRows > 0) System.out.println("User edited successfully!");
-                return affectedRows > 0;
-            } catch (SQLException e) {
-                System.out.println("User edit failed!");
-                e.printStackTrace();
-                return false;
-            }
+            EditUserRequest editUserRequest = request.getPayLoad();
+
+            stmt.setString(1, editUserRequest.getFirstName());
+            stmt.setString(2, editUserRequest.getLastName());
+            stmt.setString(3, editUserRequest.getEmail());
+            stmt.setString(4, editUserRequest.getRegion());
+            stmt.setString(5, editUserRequest.getPhoneNumber());
+            stmt.setString(6, editUserRequest.getUsername());
+
+            int affectedRows = stmt.executeUpdate();
+            if (affectedRows > 0)
+                System.out.println("User edited successfully!");
+            return affectedRows > 0;
+        } catch (SQLException e) {
+            System.out.println("User edit failed!");
+            e.printStackTrace();
+            return false;
         }
+    }
 
-
-// region Get User By Username
+    // region Get User By Username
     public static UserDto getUser(String usernameOrToken) {
         Env env = new Env();
         String URL = env.getUrl();
@@ -176,7 +178,7 @@ public class DatabaseConnector {
         String query = "SELECT user_id, first_name, last_name, username, email, region, phone_number FROM Users WHERE username = ? OR token = ?";
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+                PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, usernameOrToken);
             stmt.setString(2, usernameOrToken);
@@ -184,15 +186,15 @@ public class DatabaseConnector {
             try (ResultSet resultSet = stmt.executeQuery()) {
                 if (resultSet.next()) {
                     UserDto user = new UserDto(
-                        resultSet.getInt("user_id"),
-                        resultSet.getString("first_name"),
-                        resultSet.getString("last_name"),
-                        resultSet.getString("username"),
-                        resultSet.getString("email"),
-                        null,
-                        resultSet.getString("region"),
-                        resultSet.getString("phone_number"),
-                        null);
+                            resultSet.getInt("user_id"),
+                            resultSet.getString("first_name"),
+                            resultSet.getString("last_name"),
+                            resultSet.getString("username"),
+                            resultSet.getString("email"),
+                            null,
+                            resultSet.getString("region"),
+                            resultSet.getString("phone_number"),
+                            null);
 
                     return user;
                 }
@@ -204,8 +206,7 @@ public class DatabaseConnector {
         return null;
     }
 
-   
-//region Add A Post
+    // region Add A Post
     public static boolean addPost(BaseRequest<AddPostRequest> addPostRequest) {
         Env env = new Env();
         String URL = env.getUrl();
@@ -215,9 +216,7 @@ public class DatabaseConnector {
         String query = "INSERT INTO Posts (user_id, post_text) VALUES (?, ?)";
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-
-            
+                PreparedStatement stmt = conn.prepareStatement(query)) {
 
             var user_id = getUser(addPostRequest.getToken()).getUserId();
 
@@ -225,7 +224,8 @@ public class DatabaseConnector {
             stmt.setString(2, addPostRequest.getPayLoad().getPostText());
 
             int affectedRows = stmt.executeUpdate();
-            if (affectedRows > 0) System.out.println("Post added successfully!");
+            if (affectedRows > 0)
+                System.out.println("Post added successfully!");
             return affectedRows > 0;
         } catch (SQLException e) {
             System.out.println("Post addition failed!");
@@ -234,8 +234,7 @@ public class DatabaseConnector {
         }
     }
 
-
-//region Add A Comment
+    // region Add A Comment
     public static boolean addComment(BaseRequest<AddCommentRequest> addCommentRequest) {
         Env env = new Env();
         String URL = env.getUrl();
@@ -245,16 +244,17 @@ public class DatabaseConnector {
         String query = "INSERT INTO Comments (post_id, user_id, comment_text) VALUES (?, ?, ?)";
 
         try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-            
+                PreparedStatement stmt = conn.prepareStatement(query)) {
+
             var user_id = getUser(addCommentRequest.getToken()).getUserId();
-            
+
             stmt.setInt(1, addCommentRequest.getPayLoad().getPostID());
             stmt.setInt(2, user_id);
             stmt.setString(3, addCommentRequest.getPayLoad().getComment());
 
             int affectedRows = stmt.executeUpdate();
-            if (affectedRows > 0) System.out.println("Comment added successfully!");
+            if (affectedRows > 0)
+                System.out.println("Comment added successfully!");
             return affectedRows > 0;
         } catch (SQLException e) {
             System.out.println("Comment addition failed!");
@@ -263,26 +263,25 @@ public class DatabaseConnector {
         }
     }
 
-//add Like 
+    // add Like
 
+    // region get the list of friends + posts
 
-//region get the list of friends + posts
-
-    //get the list of friends
+    // get the list of friends
     public static List<UserDto> getFriends(String token) {
 
         String query = "SELECT u.user_id, u.first_name, u.last_name, u.username, u.email, u.region, u.phone_number " +
-                       "FROM Users u " +
-                       "JOIN Friendships f ON (u.user_id = f.user1 OR u.user_id = f.user2) " +
-                       "WHERE (f.user1 = ? OR f.user2 = ?)";
+                "FROM Users u " +
+                "JOIN Friendships f ON (u.user_id = f.user1 OR u.user_id = f.user2) " +
+                "WHERE (f.user1 = ? OR f.user2 = ?)";
 
         List<UserDto> friends = new ArrayList<>();
 
         try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-            
+                PreparedStatement stmt = conn.prepareStatement(query)) {
+
             int user_id = getUser(token).getUserId();
-            
+
             stmt.setInt(1, user_id);
             stmt.setInt(2, user_id);
             // stmt.setString(3, username);
@@ -290,15 +289,15 @@ public class DatabaseConnector {
             try (ResultSet resultSet = stmt.executeQuery()) {
                 while (resultSet.next()) {
                     UserDto friend = new UserDto(
-                        resultSet.getInt("user_id"),
-                        resultSet.getString("first_name"),
-                        resultSet.getString("last_name"),
-                        resultSet.getString("username"),
-                        resultSet.getString("email"),
-                        null,
-                        resultSet.getString("region"),
-                        resultSet.getString("phone_number"),
-                        null);
+                            resultSet.getInt("user_id"),
+                            resultSet.getString("first_name"),
+                            resultSet.getString("last_name"),
+                            resultSet.getString("username"),
+                            resultSet.getString("email"),
+                            null,
+                            resultSet.getString("region"),
+                            resultSet.getString("phone_number"),
+                            null);
 
                     friends.add(friend);
                 }
@@ -314,10 +313,10 @@ public class DatabaseConnector {
         List<UserDto> result = users;
 
         String postQuery = "SELECT post_id, user_id, post_text, post_date FROM Posts WHERE user_id = ?";
-        
+
         try (Connection conn = getConnection()) {
 
-            for(int i = 0; i < result.size(); i++) {
+            for (int i = 0; i < result.size(); i++) {
 
                 // Retrieve posts
                 try (PreparedStatement postStmt = conn.prepareStatement(postQuery)) {
@@ -331,12 +330,14 @@ public class DatabaseConnector {
                         while (postResultSet.next()) {
 
                             // Retrieve comments for the post
-                            List<CommentDto> comments = getCommentsForPost(conn, users.get(i).getUserId(), postResultSet.getInt("post_id"));
+                            List<CommentDto> comments = getCommentsForPost(conn, users.get(i).getUserId(),
+                                    postResultSet.getInt("post_id"));
 
                             // Retrieve likes for the post
-                            List<Integer> likes = getLikesForPost(conn, users.get(i).getUserId(), postResultSet.getInt("post_id"));
-                            
-                            //initialize the post
+                            List<Integer> likes = getLikesForPost(conn, users.get(i).getUserId(),
+                                    postResultSet.getInt("post_id"));
+
+                            // initialize the post
                             PostDto post = new PostDto(
                                     postResultSet.getInt("post_id"),
                                     postResultSet.getInt("user_id"),
@@ -344,8 +345,7 @@ public class DatabaseConnector {
                                     postResultSet.getString("post_date"),
                                     comments,
                                     likes,
-                                    null
-                                    );
+                                    null);
 
                             // Retrieve comments for the post
 
@@ -369,11 +369,11 @@ public class DatabaseConnector {
             try (ResultSet commentResultSet = commentStmt.executeQuery()) {
                 while (commentResultSet.next()) {
                     CommentDto comment = new CommentDto(
-                        commentResultSet.getInt("comment_id"),
-                        commentResultSet.getInt("post_id"),
-                        commentResultSet.getInt("user_id"),
-                        commentResultSet.getString("comment_text"),
-                        commentResultSet.getString("comment_date"));
+                            commentResultSet.getInt("comment_id"),
+                            commentResultSet.getInt("post_id"),
+                            commentResultSet.getInt("user_id"),
+                            commentResultSet.getString("comment_text"),
+                            commentResultSet.getString("comment_date"));
                     comments.add(comment);
                 }
             }
@@ -396,5 +396,33 @@ public class DatabaseConnector {
         return likes;
     }
 
-    //endregion
+    public static List<UserDto> searchUsersByUsername(String searchvalue) {
+        String sql = "SELECT * FROM Users WHERE username LIKE CONCAT('%', ?, '%')";
+
+        List<UserDto> searchResults = new ArrayList<>();
+
+        try (Connection conn = getConnection();
+                PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, searchvalue);
+
+            try (ResultSet resultSet = pstmt.executeQuery()) {
+                while (resultSet.next()) {
+                    UserDto user = getUser(resultSet.getString("username"));
+                    searchResults.add(user);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return searchResults;
+    }
+
+    public static List<UserDto> getPostInfoByUsername(String username) {
+        List<UserDto> users = new ArrayList<>();
+        users.add(getUser(username));
+        users = getPostsCommentsLikesForUsers(users);
+        return users;
+    }
+
+    // endregion
 }
