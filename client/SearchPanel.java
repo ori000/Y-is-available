@@ -1,17 +1,13 @@
 import javax.swing.*;
 
-import Shared.Requests.AddPostRequest;
-import Shared.Requests.BaseRequest;
 
 import Shared.Dtos.*;
 
 import java.awt.*;
-import java.io.*;
 import java.util.List;
 import java.util.ArrayList;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ContainerListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.ObjectInputStream;
@@ -25,6 +21,7 @@ class SearchPanel extends JPanel {
         JPanel searchPanel = new JPanel();
         JTextField searchField = new JTextField(20);
         JButton searchButton = new JButton("Search");
+        Styles.styleButtonSmall(searchButton);
         searchPanel.add(searchField);
         searchPanel.add(searchButton);
         Styles.stylePanel(searchPanel); // Apply your styling here
@@ -52,6 +49,7 @@ class SearchPanel extends JPanel {
                 resultPanel.removeAll();
                 for (UserDto user : searchResults) {
                     JPanel userPanel = createUserPanel(user, clientSocket, outputStream, inputStream);
+                    Styles.stylePanel(userPanel);
                     resultPanel.add(userPanel);
                 }
                 resultPanel.revalidate();
@@ -81,6 +79,7 @@ class SearchPanel extends JPanel {
                 }
             }
         }
+        Styles.stylePanel(this);
     }
 
     private List<UserDto> performSearch(ClientSocket client_socket, ObjectOutputStream outputStream,
@@ -119,7 +118,9 @@ class SearchPanel extends JPanel {
     private JPanel createUserPanel(UserDto user, ClientSocket clientsocket, ObjectOutputStream outputStream,
             ObjectInputStream inputStream) {
         JPanel panel = new JPanel();
+        Styles.stylePanel(panel);
         JLabel usernameLabel = new JLabel(user.getUsername());
+        Styles.styleLabel(usernameLabel);
         panel.add(usernameLabel);
         // Add a mouse click listener to the JLabel
         return panel;

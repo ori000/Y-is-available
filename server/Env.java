@@ -4,7 +4,7 @@ public class Env {
     private String username;
 
     private void setPassword(){
-        this.password = "oSQL.141@RP";
+        this.password = "your Password";
     }
     public String getPassword(){
         setPassword();

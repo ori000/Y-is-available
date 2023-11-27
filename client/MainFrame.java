@@ -1,19 +1,6 @@
 import javax.swing.*;
 
-import Shared.Requests.AddPostRequest;
-import Shared.Requests.BaseRequest;
-
-import Shared.Dtos.*;
-
 import java.awt.*;
-import java.io.*;
-import java.util.List;
-import java.util.ArrayList;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ContainerListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
@@ -42,7 +29,7 @@ public class MainFrame extends JFrame {
         centralPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY)); // Border to differentiate from sidebar
 
         // Add Home and Profile panels
-        HomePanel homePanel = new HomePanel();
+        HomePanel homePanel = new HomePanel(clientSocket, outputStream, inputStream);
         ProfilePanel profilePanel = new ProfilePanel();
         FriendsPanel friendsPanel = new FriendsPanel();
         SearchPanel searchPanel = new SearchPanel(clientSocket, outputStream, inputStream);
@@ -71,10 +58,12 @@ public class MainFrame extends JFrame {
         add(centralPanel, BorderLayout.CENTER);
         pack();
         setLocationRelativeTo(null);
+        setVisible(true);
     }
 
     private void addButton(JPanel panel, String text, JPanel cardPanel, String cardName, GridBagConstraints gbc) {
         JButton button = new JButton(text);
+        Styles.styleNavBarButton(button);
         button.addActionListener(e -> cardLayout.show(cardPanel, cardName));
         panel.add(button, gbc);
     }

@@ -3,8 +3,6 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
 
-import com.mysql.cj.xdevapi.Client;
-
 public class Server {
 
     private ServerSocket serverSocket;
