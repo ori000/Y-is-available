@@ -2,8 +2,9 @@ public class Env {
     private String password;
     private String url;
     private String username;
+
     private void setPassword(){
-        this.password = "your password";
+        this.password = "root";
     }
     public String getPassword(){
         setPassword();

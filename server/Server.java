@@ -3,26 +3,31 @@ import java.net.*;
 import java.util.*;
 import java.util.concurrent.*;
 
+import com.mysql.cj.xdevapi.Client;
+
 public class Server {
 
     private ServerSocket serverSocket;
     private ExecutorService pool;
-    private Map<String, ClientHandler> activeUsers;
-
+    private Map<String, ClientHandler> activeUsers ;
 
     public Server(int port) throws IOException {
         serverSocket = new ServerSocket(port);
-        pool = Executors.newFixedThreadPool(10);
+        try (FileWriter writer = new FileWriter("port.txt")) {
+            writer.write(String.valueOf(port));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        pool = Executors.newFixedThreadPool(100); //number of similtanious clients
         activeUsers = new ConcurrentHashMap<>();
     }
 
     public void start() {
         System.out.println("Server started on port " + serverSocket.getLocalPort());
-        sendPortNumber(); //send the port number to the client
         try {
             while (true) {
                 Socket clientSocket = serverSocket.accept();
-                ClientHandler clientHandler = new ClientHandler(clientSocket, this);
+                ClientHandler clientHandler = new ClientHandler(clientSocket);
                 pool.execute(clientHandler);
             }
         } catch (IOException e) {
@@ -39,23 +44,6 @@ public class Server {
             }
             pool.shutdown();
         } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    //function to send the port number to the client
-    public void sendPortNumber() {
-        //create a temporary server socket to send the port number to the client
-        try {
-            ServerSocket tempServerSocket = new ServerSocket(5987);
-            //send the port number to the client
-            Socket tempSocket = tempServerSocket.accept();
-            DataOutputStream output = new DataOutputStream(tempSocket.getOutputStream());
-            output.writeInt(serverSocket.getLocalPort());
-            output.flush();
-            tempSocket.close();
-            tempServerSocket.close();
-        } catch (Exception e) {
             e.printStackTrace();
         }
     }
