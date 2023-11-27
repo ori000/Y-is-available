@@ -44,9 +44,9 @@ public class DatabaseConnector {
             pstmt.setString(6, hashPassword(password)); // Hash the password
             pstmt.setString(7, username);
 
-            addSelfFriend(username); // Add the user to be the friend of himself
-
+            
             int affectedRows = pstmt.executeUpdate();
+            addSelfFriend(getUser(username).getUserId()); // Add the user to be the friend of himself
             if (affectedRows > 0)
                 System.out.println("User registered successfully!");
             return affectedRows > 0;
@@ -59,12 +59,12 @@ public class DatabaseConnector {
 
 
     // add a user to be the friend of himself
-    private static boolean addSelfFriend(String username) {
+    private static boolean addSelfFriend(int user_id) {
         String sql = "INSERT INTO Friendships (user1, user2) VALUES (?, ?)";
 
         try (Connection conn = getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, username);
-            pstmt.setString(2, username);
+            pstmt.setInt(1, user_id);
+            pstmt.setInt(2, user_id);
 
             int affectedRows = pstmt.executeUpdate();
             if (affectedRows > 0) System.out.println("User added successfully!");

@@ -137,7 +137,7 @@ class SearchPanel extends JPanel {
             singlePostPanel.setLayout(new BoxLayout(singlePostPanel, BoxLayout.Y_AXIS));
             singlePostPanel.add(new JLabel("Post: " + post.getPostText()));
             singlePostPanel.add(new JLabel("Date: " + post.getPostDate()));
-            singlePostPanel.add(new JLabel("Likes: " + post.getLikes().size()));
+            singlePostPanel.add(new JLabel("Likes: " + post.getReactions().size()));
 
             // Display Comments
             for (CommentDto comment : post.getComments()) {
