@@ -389,11 +389,62 @@ public static void handleAddReaction(BaseRequest<AddReactionRequest> request) {
     }
 
 
-    // hayde
+    // get posts + comments + likes of that post
     public static List<UserDto> getPostsCommentsLikesForUsers(List<UserDto> users) {
         List<UserDto> result = users;
 
         String postQuery = "SELECT post_id, user_id, post_text, post_date FROM Posts WHERE user_id = ?";
+        
+        try (Connection conn = getConnection()) {
+
+            for(int i = 0; i < result.size(); i++) {
+
+                // Retrieve posts
+                try (PreparedStatement postStmt = conn.prepareStatement(postQuery)) {
+
+                    postStmt.setInt(1, users.get(i).getUserId());
+
+                    try (ResultSet postResultSet = postStmt.executeQuery()) {
+
+                        List<PostDto> posts = new ArrayList<>();
+
+                        while (postResultSet.next()) {
+
+                            // Retrieve comments for the post
+                            List<CommentDto> comments = getCommentsForPost(conn, users.get(i).getUserId(), postResultSet.getInt("post_id"));
+
+                            // Retrieve likes for the post
+                            List<ReactionDto> likes = getReactionsForPost(conn, users.get(i).getUserId(), postResultSet.getInt("post_id"));
+                            
+                            //initialize the post
+                            PostDto post = new PostDto(
+                                    postResultSet.getInt("post_id"),
+                                    postResultSet.getInt("user_id"),
+                                    postResultSet.getString("post_text"),
+                                    postResultSet.getString("post_date"),
+                                    comments,
+                                    likes,
+                                    null
+                                    );
+
+                            // Retrieve comments for the post
+
+                            posts.add(post);
+                        }
+                        result.get(i).setPosts(posts);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return result;
+    }
+
+    public static List<UserDto> getTrendingPostsCommentsLikesForUsers(List<UserDto> users) {
+        List<UserDto> result = users;
+
+        String postQuery = "SELECT post_id, user_id, post_text, post_date FROM Posts WHERE post_date >= NOW() - INTERVAL 1 DAY";
         
         try (Connection conn = getConnection()) {
 

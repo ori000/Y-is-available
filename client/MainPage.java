@@ -385,6 +385,12 @@ class MainPage extends JFrame {
         
         postsPanel.add(newPostPanel);
 
+        JPanel trendingPostsPanel = new JPanel();
+        Styles.stylePanel(trendingPostsPanel);
+        trendingPostsPanel.setLayout(new BoxLayout(trendingPostsPanel, BoxLayout.Y_AXIS));
+        trendingPostsPanel.setBackground(Color.WHITE);
+        trendingPostsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Padding
+
         //get all posts from server
         List<UserDto> usersPosts = getPosts(clientSocket, outputStream, inputStream);
 
@@ -394,6 +400,17 @@ class MainPage extends JFrame {
                 System.out.println(post.getPostText());
                 PostPanel postPanel = new PostPanel(clientSocket, outputStream, inputStream, post);
                 postsPanel.add(postPanel);
+            }
+        }
+
+        List<UserDto> usersTrendingPosts = getTrendingPosts(clientSocket, outputStream, inputStream);
+
+        // add posts to the posts panel
+        for (UserDto user : usersTrendingPosts) {
+            for (PostDto post : user.posts) {
+                System.out.println(post.getPostText());
+                PostPanel postPanel = new PostPanel(clientSocket, outputStream, inputStream, post);
+                trendingPostsPanel.add(postPanel);
             }
         }
 
@@ -408,6 +425,8 @@ class MainPage extends JFrame {
 
         add (newPeoplePanel, BorderLayout.EAST);
 
+        add (trendingPostsPanel, BorderLayout.SOUTH);
+
         pack();
         setLocationRelativeTo(null);
         setVisible(true);
@@ -418,11 +437,31 @@ class MainPage extends JFrame {
         try {
                     // 1 - Create a socket and connect to the server
                     System.out.println("Client socket created with IP: " + client_socket.client_ip_address + " and sending to port number: " + ClientSocket.client_port_number);
-                    
-                    
 
-                    // 3 - Send the User object to the server and tell the server to register
+                    // 2 - Send the User object to the server and tell the server to register
                     outputStream.writeObject("GET_POSTS");
+                    outputStream.writeObject(client_socket.getUserToken());
+                    System.out.println("Getting posts...");
+
+                    // Read the response from the server
+                    List<UserDto> postList = (List<UserDto>) inputStream.readObject();
+                    
+                    return postList;
+                } 
+                catch (Exception e1) {
+                    e1.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "An unexpected error occurred", "Error", JOptionPane.ERROR_MESSAGE);
+                } 
+        return new ArrayList<UserDto>();
+    }
+
+    private List<UserDto> getTrendingPosts(ClientSocket client_socket, ObjectOutputStream outputStream, ObjectInputStream inputStream) {
+        try {
+                    // 1 - Create a socket and connect to the server
+                    System.out.println("Client socket created with IP: " + client_socket.client_ip_address + " and sending to port number: " + ClientSocket.client_port_number);
+
+                    // 2 - Send the User object to the server and tell the server to register
+                    outputStream.writeObject("GET_TRENDING_POSTS");
                     outputStream.writeObject(client_socket.getUserToken());
                     System.out.println("Getting posts...");
 
@@ -443,9 +482,7 @@ class MainPage extends JFrame {
             // 1 - Create a socket and connect to the server
             System.out.println("Client socket created with IP: " + client_socket.client_ip_address + " and sending to port number: " + ClientSocket.client_port_number);
             
-            
-
-            // 3 - Send the User object to the server and tell the server to register
+            // 2 - Send the User object to the server and tell the server to register
             outputStream.writeObject("GET_NEW_PEOPLE");
             outputStream.writeObject(client_socket.getUserToken());
             System.out.println("Getting new people...");

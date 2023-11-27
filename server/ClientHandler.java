@@ -55,6 +55,14 @@ public class ClientHandler implements Runnable {
                             serverOutput.writeObject(postsResponse);
                             serverOutput.flush();
                             break;
+                        case "GET_TRENDING_POSTS":
+                            System.out.println("Getting trending posts...");
+                            token = (String) serverInput.readObject();
+                            List<UserDto> trendingFriendsList = DatabaseConnector.getFriends(token);
+                            List<UserDto> trendingPostsResponse = DatabaseConnector.getPostsCommentsLikesForUsers(trendingFriendsList);
+                            serverOutput.writeObject(trendingPostsResponse);
+                            serverOutput.flush();
+                            break;
                         case "GET_USER":
                             System.out.println("Getting User...");
                             String usernameToGet = (String) serverInput.readObject();
