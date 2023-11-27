@@ -15,7 +15,8 @@ public class ClientHandler implements Runnable {
     public ClientHandler(Socket socket) {
         this.clientSocket = socket;
         try {
-            // Initializing serverOutput first to ensure serverInput can read object headers sent by serverOutput
+            // Initializing serverOutput first to ensure serverInput can read object headers
+            // sent by serverOutput
             serverOutput = new ObjectOutputStream(socket.getOutputStream());
             serverInput = new ObjectInputStream(socket.getInputStream());
         } catch (IOException e) {
@@ -71,14 +72,16 @@ public class ClientHandler implements Runnable {
                             break;
                         case "ADD_POST":
                             System.out.println("Adding Post...");
-                            BaseRequest<AddPostRequest> addPostRequest = (BaseRequest<AddPostRequest>) serverInput.readObject();
+                            BaseRequest<AddPostRequest> addPostRequest = (BaseRequest<AddPostRequest>) serverInput
+                                    .readObject();
                             boolean addPostResponse = DatabaseConnector.addPost(addPostRequest);
                             serverOutput.writeObject(addPostResponse);
                             serverOutput.flush();
                             break;
                         case "ADD_COMMENT":
                             System.out.println("Adding Comment...");
-                            BaseRequest<AddCommentRequest> addCommentRequest = (BaseRequest<AddCommentRequest>) serverInput.readObject();
+                            BaseRequest<AddCommentRequest> addCommentRequest = (BaseRequest<AddCommentRequest>) serverInput
+                                    .readObject();
                             boolean addCommentResponse = DatabaseConnector.addComment(addCommentRequest);
                             serverOutput.writeObject(addCommentResponse);
                             serverOutput.flush();
@@ -104,6 +107,21 @@ public class ClientHandler implements Runnable {
                             serverOutput.writeObject(true);
                             serverOutput.flush();
                             break;
+                        case "SEARCH_USER":
+                            System.out.println("Searching User...");
+                            String usernameToGetUsers = (String) serverInput.readObject();
+                            List<UserDto> searchResponse = DatabaseConnector.searchUsersByUsername(usernameToGetUsers);
+                            serverOutput.writeObject(searchResponse);
+                            serverOutput.flush();
+                            break;
+                        case "GET_USER_INFO":
+                            System.out.println("Getting User Info...");
+                            String usernameToGetPostInfo = (String) serverInput.readObject();
+                            List<UserDto> userpostinfoResponse = DatabaseConnector
+                                    .getPostInfoByUsername(usernameToGetPostInfo);
+                            serverOutput.writeObject(userpostinfoResponse);
+                            serverOutput.flush();
+                            break;
                         case "LOGOUT":
                             System.out.println("Logging out...");
                             String usernameToLogout = (String) serverInput.readObject();
@@ -111,7 +129,7 @@ public class ClientHandler implements Runnable {
                             serverOutput.writeObject(true);
                             serverOutput.flush();
                             break;
-                    
+
                         default:
                             break;
                     }
@@ -126,9 +144,12 @@ public class ClientHandler implements Runnable {
 
     private void closeConnections() {
         try {
-            if (serverOutput != null) serverOutput.close();
-            if (serverInput != null) serverInput.close();
-            if (clientSocket != null) clientSocket.close();
+            if (serverOutput != null)
+                serverOutput.close();
+            if (serverInput != null)
+                serverInput.close();
+            if (clientSocket != null)
+                clientSocket.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
