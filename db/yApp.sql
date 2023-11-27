@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS Users (
     password VARCHAR(255) NOT NULL,
     region VARCHAR(255),
     phone_number VARCHAR(20),
-    token VARCHAR(255),
+    token VARCHAR(255)
 );
 
 -- Posts table
@@ -46,13 +46,16 @@ CREATE TABLE IF NOT EXISTS Comments (
 );
 
 -- Likes table
-CREATE TABLE IF NOT EXISTS Likes (
-    like_id INT AUTO_INCREMENT PRIMARY KEY,
-    post_id INT NOT NULL,
-    user_id INT NOT NULL,
+CREATE TABLE Reactions (
+    reaction_id INT AUTO_INCREMENT PRIMARY KEY,
+    post_id INT,
+    user_id INT,
+    type VARCHAR(255),
     FOREIGN KEY (post_id) REFERENCES Posts(post_id),
     FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );
+
+ALTER TABLE Reactions ADD UNIQUE INDEX idx_user_post (user_id, post_id);
 
 -- Friends table
 CREATE TABLE IF NOT EXISTS Friendships (

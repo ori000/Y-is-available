@@ -10,7 +10,7 @@ public class PostDto implements Serializable{
     private String postText;
     private String postDate;
     private List<CommentDto> comments; // Assuming a post can have multiple comments
-    private List<Integer> likes; // Assuming a post can have multiple likes
+    private List<ReactionDto> reactions; // Assuming a post can have multiple likes
     private List<MediaDto> media; // Assuming a post can have multiple media items
 
     //constructor
@@ -20,7 +20,7 @@ public class PostDto implements Serializable{
         String postText,
         String postDate,
         List<CommentDto> comments,
-        List<Integer> likes,
+        List<ReactionDto> reactions,
         List<MediaDto> media
     ) {
         this.postId = postId;
@@ -28,7 +28,7 @@ public class PostDto implements Serializable{
         this.postText = postText;
         this.postDate = postDate;
         this.comments = comments != null ? comments : new ArrayList<CommentDto>();
-        this.likes = likes != null ? likes : new ArrayList<Integer>();
+        this.reactions = reactions != null ? reactions : new ArrayList<ReactionDto>();
         this.media = media != null ? media : new ArrayList<MediaDto>();
     }
 
@@ -53,8 +53,8 @@ public class PostDto implements Serializable{
         return comments;
     }
 
-    public List<Integer> getLikes() {
-        return likes;
+    public List<ReactionDto> getReactions() {
+        return reactions;
     }
 
     public List<MediaDto> getMedia() {

@@ -83,6 +83,13 @@ public class ClientHandler implements Runnable {
                             serverOutput.writeObject(addCommentResponse);
                             serverOutput.flush();
                             break;
+                        case "ADD_REACTION":
+                            System.out.println("Adding Like...");
+                            BaseRequest<AddReactionRequest> addReactionRequest = (BaseRequest<AddReactionRequest>) serverInput.readObject(); 
+                            DatabaseConnector.handleAddReaction(addReactionRequest);
+                            serverOutput.writeObject(true);
+                            serverOutput.flush();
+                            break;
                         case "LOGOUT":
                             System.out.println("Logging out...");
                             String usernameToLogout = (String) serverInput.readObject();

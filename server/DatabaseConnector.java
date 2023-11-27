@@ -9,6 +9,7 @@ import java.util.List;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import Shared.Dtos.*;
+import Shared.Enums.ReactionType;
 import Shared.Requests.*;
 import java.util.UUID;
 
@@ -168,14 +169,10 @@ public class DatabaseConnector {
 
 // region Get User By Username
     public static UserDto getUser(String usernameOrToken) {
-        Env env = new Env();
-        String URL = env.getUrl();
-        String USER = env.getUsername();
-        String PASSWORD = env.getPassword();
 
         String query = "SELECT user_id, first_name, last_name, username, email, region, phone_number FROM Users WHERE username = ? OR token = ?";
 
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+        try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             stmt.setString(1, usernameOrToken);
@@ -207,14 +204,10 @@ public class DatabaseConnector {
    
 //region Add A Post
     public static boolean addPost(BaseRequest<AddPostRequest> addPostRequest) {
-        Env env = new Env();
-        String URL = env.getUrl();
-        String USER = env.getUsername();
-        String PASSWORD = env.getPassword();
 
         String query = "INSERT INTO Posts (user_id, post_text) VALUES (?, ?)";
 
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+        try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
 
             
@@ -237,14 +230,10 @@ public class DatabaseConnector {
 
 //region Add A Comment
     public static boolean addComment(BaseRequest<AddCommentRequest> addCommentRequest) {
-        Env env = new Env();
-        String URL = env.getUrl();
-        String USER = env.getUsername();
-        String PASSWORD = env.getPassword();
 
         String query = "INSERT INTO Comments (post_id, user_id, comment_text) VALUES (?, ?, ?)";
 
-        try (Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+        try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
             
             var user_id = getUser(addCommentRequest.getToken()).getUserId();
@@ -264,7 +253,49 @@ public class DatabaseConnector {
     }
 
 //add Like 
+public static void handleAddReaction(BaseRequest<AddReactionRequest> request) {
+    
+    Integer userId = getUser(request.getToken()).getUserId();
+    ReactionType reactionType = request.getPayLoad().getReactionType();
+    Integer postId = request.getPayLoad().getPostId();
 
+    try (Connection conn = getConnection()) {
+        // Check if the user has already reacted to the post
+        String checkSql = "SELECT reaction_id FROM Reactions WHERE user_id = ? AND post_id = ?";
+
+        try (PreparedStatement checkStmt = conn.prepareStatement(checkSql)) {
+
+            checkStmt.setInt(1, userId);
+            checkStmt.setInt(2, postId);
+            ResultSet rs = checkStmt.executeQuery();
+            if (rs.next()) {
+                // If a reaction exists, update it
+                String updateSql = "UPDATE Reactions SET type = ? WHERE user_id = ? AND post_id = ?";
+
+                try (PreparedStatement updateStmt = conn.prepareStatement(updateSql)) {
+                    updateStmt.setString(1, String.valueOf(reactionType));
+                    updateStmt.setInt(2, userId);
+                    updateStmt.setInt(3, postId);
+                    updateStmt.executeUpdate();
+                }
+            } else {
+                // If no reaction exists, insert a new one
+                String insertSql = "INSERT INTO Reactions (post_id, user_id, type) VALUES (?, ?, ?)";
+
+                try (PreparedStatement insertStmt = conn.prepareStatement(insertSql)) {
+                    insertStmt.setInt(1, postId);
+                    insertStmt.setInt(2, userId);
+                    insertStmt.setString(3, String.valueOf(reactionType));
+                    insertStmt.executeUpdate();
+                }
+            }
+            System.out.println("Reaction updated");
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+        System.out.println("Error handling reaction: " + e.getMessage());
+    }
+}    
 
 //region get the list of friends + posts
 
@@ -310,6 +341,7 @@ public class DatabaseConnector {
         return friends;
     }
 
+    // hayde
     public static List<UserDto> getPostsCommentsLikesForUsers(List<UserDto> users) {
         List<UserDto> result = users;
 
@@ -334,7 +366,7 @@ public class DatabaseConnector {
                             List<CommentDto> comments = getCommentsForPost(conn, users.get(i).getUserId(), postResultSet.getInt("post_id"));
 
                             // Retrieve likes for the post
-                            List<Integer> likes = getLikesForPost(conn, users.get(i).getUserId(), postResultSet.getInt("post_id"));
+                            List<ReactionDto> likes = getReactionsForPost(conn, users.get(i).getUserId(), postResultSet.getInt("post_id"));
                             
                             //initialize the post
                             PostDto post = new PostDto(
@@ -381,19 +413,23 @@ public class DatabaseConnector {
         return comments;
     }
 
-    private static List<Integer> getLikesForPost(Connection conn, int userId, int postId) throws SQLException {
-        List<Integer> likes = new ArrayList<>();
-        String likeQuery = "SELECT like_id, post_id, user_id FROM Likes WHERE post_id IN (SELECT post_id FROM Posts WHERE user_id = ?)";
+    private static List<ReactionDto> getReactionsForPost(Connection conn, int userId, int postId) throws SQLException {
+        List<ReactionDto> reactions = new ArrayList<>();
+        String likeQuery = "SELECT type, post_id, user_id FROM Reactions WHERE post_id IN (SELECT post_id FROM Posts WHERE user_id = ?)";
 
         try (PreparedStatement likeStmt = conn.prepareStatement(likeQuery)) {
             likeStmt.setInt(1, userId);
             try (ResultSet likeResultSet = likeStmt.executeQuery()) {
                 while (likeResultSet.next()) {
-                    likes.add(likeResultSet.getInt("user_id"));
+                    ReactionDto reaction = new ReactionDto(
+                        likeResultSet.getInt("user_id"),
+                        likeResultSet.getInt("post_id"),
+                        likeResultSet.getString("type"));
+                    reactions.add(reaction);
                 }
             }
         }
-        return likes;
+        return reactions;
     }
 
     //endregion

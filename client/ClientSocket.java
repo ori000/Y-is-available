@@ -5,9 +5,13 @@ import java.io.DataInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
+
+import Shared.Dtos.UserDto;
 
 // make one single instane
 public class ClientSocket{

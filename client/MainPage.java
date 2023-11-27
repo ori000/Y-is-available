@@ -1,9 +1,12 @@
 import javax.swing.*;
+import javax.swing.plaf.ComboBoxUI;
 
 import Shared.Requests.AddPostRequest;
+import Shared.Requests.AddReactionRequest;
 import Shared.Requests.BaseRequest;
 
 import Shared.Dtos.*;
+import Shared.Enums.ReactionType;
 
 import java.awt.*;
 import java.io.*;
@@ -70,10 +73,9 @@ class NavBarPanel extends JPanel {
 }
 
 class PostPanel extends JPanel {
-    private JButton likeButton;
     private JButton commentButton;
 
-    public PostPanel(ClientSocket socket, ObjectOutputStream outputStream, ObjectInputStream inputStream, PostDto post) {
+    public PostPanel(ClientSocket client_socket, ObjectOutputStream outputStream, ObjectInputStream inputStream, PostDto post) {
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
         setAlignmentX(LEFT_ALIGNMENT);
 
@@ -85,13 +87,72 @@ class PostPanel extends JPanel {
 
         JPanel postContentPanel = new JPanel();
         Styles.stylePanel(postContentPanel);
-        likeButton = new JButton("Like");
-        Styles.styleButtonSmall(likeButton);
+        JComboBox<ReactionType> reactionButton = new JComboBox<ReactionType>();
+
+        UserDto user = client_socket.getUserInfoByToken(outputStream, inputStream);
+
+        reactionButton.addItem(ReactionType.LIKE);
+        reactionButton.addItem(ReactionType.LOVE);
+        reactionButton.addItem(ReactionType.LAUGH);
+        reactionButton.addItem(ReactionType.SAD);
+        reactionButton.addItem(ReactionType.ANGRY);
+
+
+        reactionButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ReactionType reactionType = (ReactionType) reactionButton.getSelectedItem();
+                System.out.println(reactionType);
+                //send reaction to server
+                try {
+                    // 1 - Create a socket and connect to the server
+                    System.out.println("Client socket created with IP: " + client_socket.client_ip_address + " and sending to port number: " + ClientSocket.client_port_number);
+                    
+                    BaseRequest<AddReactionRequest> addReactionRequest = new BaseRequest(client_socket.getUserToken(), new AddReactionRequest(post.getPostId(), reactionType));
+                    
+
+                    // 3 - Send the User object to the server and tell the server to register
+                    outputStream.writeObject("ADD_REACTION");
+                    outputStream.writeObject(addReactionRequest);
+                    System.out.println("Info sent...");
+
+                    // Read the response from the server
+                    boolean reactedPosted = (boolean) inputStream.readObject();
+                    
+                    if (reactedPosted) {
+                        JOptionPane.showMessageDialog(null, "Reacted Successfully");
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Failed Reacting", "Error", JOptionPane.ERROR_MESSAGE);                
+                    }
+                } 
+                catch (Exception e1) {
+                    e1.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "An unexpected error occurred", "Error", JOptionPane.ERROR_MESSAGE);
+                } 
+            }
+        });
+
 
         commentButton = new JButton("Comment");
         Styles.styleButtonSmall(commentButton);
 
-        postContentPanel.add(likeButton);
+
+        //set value of the reaction button to the user's reaction that he already reacted with
+        for (ReactionDto reaction : post.getReactions()) {
+            System.out.println(reaction.getReactionType());
+            System.out.println(reaction.getUserId()+ "" + user.getUserId());
+            if (reaction.getUserId() == user.getUserId()) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        reactionButton.setSelectedItem(reaction.getReactionType());
+                        reactionButton.setToolTipText(String.valueOf(reactionButton.getSelectedItem()));
+                    }
+                });
+            }
+        }
+
+        postContentPanel.add(reactionButton);
         postContentPanel.add(commentButton);
 
         //add panel borders padding and margins
