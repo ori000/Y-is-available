@@ -437,75 +437,7 @@ class SearchPage extends JFrame {
     }
 
     // Method to perform search
-    private List<UserDto> performSearch(ClientSocket client_socket, ObjectOutputStream outputStream,
-            ObjectInputStream inputStream, String searchText) {
-        try {
-            outputStream.writeObject("SEARCH_USER");
-            outputStream.writeObject(searchText);
-            System.out.println("Searching for users: " + searchText);
-            // Read the response from the server
-            List<UserDto> userList = (List<UserDto>) inputStream.readObject();
-            return userList;
-        } catch (Exception e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "An unexpected error occurred while searching", "Error",
-                    JOptionPane.ERROR_MESSAGE);
-            return new ArrayList<UserDto>();
-        }
-    }
-
-    private List<UserDto> sendUserInfo(ClientSocket client_socket, ObjectOutputStream outputStream,
-            ObjectInputStream inputStream, String clickedUsername) {
-        try {
-            outputStream.writeObject("GET_USER_INFO");
-            outputStream.writeObject(clickedUsername);
-            System.out.println("Sending user info request for: " + clickedUsername);
-            List<UserDto> userList = (List<UserDto>) inputStream.readObject();
-            return userList;
-        } catch (Exception e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(null, "An error occurred while sending user info", "Error",
-                    JOptionPane.ERROR_MESSAGE);
-            return new ArrayList<UserDto>();
-        }
-    }
-
-    private JPanel createUserPanel(UserDto user, ClientSocket clientsocket, ObjectOutputStream outputStream,
-            ObjectInputStream inputStream) {
-        JPanel panel = new JPanel();
-        JLabel usernameLabel = new JLabel(user.getUsername());
-        panel.add(usernameLabel);
-        // Add a mouse click listener to the JLabel
-        return panel;
-    }
-
-    private void displayUserPosts(UserDto user) {
-        JFrame postFrame = new JFrame(user.getUsername() + "'s Posts");
-        postFrame.setLayout(new BorderLayout());
-        JPanel postPanel = new JPanel();
-        postPanel.setLayout(new BoxLayout(postPanel, BoxLayout.Y_AXIS));
-
-        for (PostDto post : user.getPosts()) {
-            JPanel singlePostPanel = new JPanel();
-            singlePostPanel.setLayout(new BoxLayout(singlePostPanel, BoxLayout.Y_AXIS));
-            singlePostPanel.add(new JLabel("Post: " + post.getPostText()));
-            singlePostPanel.add(new JLabel("Date: " + post.getPostDate()));
-            singlePostPanel.add(new JLabel("Likes: " + post.getLikes().size()));
-
-            // Display Comments
-            for (CommentDto comment : post.getComments()) {
-                singlePostPanel.add(new JLabel("Comment: " + comment.getCommentText()));
-            }
-
-            postPanel.add(singlePostPanel);
-            postPanel.add(Box.createRigidArea(new Dimension(0, 10))); // Spacing between posts
-        }
-
-        JScrollPane scrollPane = new JScrollPane(postPanel);
-        postFrame.add(scrollPane, BorderLayout.CENTER);
-        postFrame.pack();
-        postFrame.setVisible(true);
-    }
+   
 }
 
 class MainPage extends JFrame {
