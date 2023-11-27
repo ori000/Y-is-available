@@ -65,3 +65,6 @@ CREATE TABLE IF NOT EXISTS Friendships (
     FOREIGN KEY (user1) REFERENCES Users(user_id),
     FOREIGN KEY (user2) REFERENCES Users(user_id)
 );
+
+SELECT * FROM USERS;
+SELECT * FROM POSTS;

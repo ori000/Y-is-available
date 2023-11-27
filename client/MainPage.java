@@ -1,6 +1,8 @@
 import javax.swing.*;
 import javax.swing.plaf.ComboBoxUI;
 
+import Shared.Requests.AddCommentRequest;
+import Shared.Requests.AddNewPeopleRequest;
 import Shared.Requests.AddPostRequest;
 import Shared.Requests.AddReactionRequest;
 import Shared.Requests.BaseRequest;
@@ -74,10 +76,21 @@ class NavBarPanel extends JPanel {
 
 class PostPanel extends JPanel {
     private JButton commentButton;
+    private JTextArea commentTextArea;
+    private JButton submitCommentButton;
+    private boolean isCommentAreaVisible = false;
 
     public PostPanel(ClientSocket client_socket, ObjectOutputStream outputStream, ObjectInputStream inputStream, PostDto post) {
         setLayout(new BoxLayout(this, BoxLayout.PAGE_AXIS));
         setAlignmentX(LEFT_ALIGNMENT);
+
+        commentTextArea = new JTextArea(3, 20);
+        Styles.styleTextArea(commentTextArea);
+        commentTextArea.setVisible(false);
+
+        submitCommentButton = new JButton("Submit Comment");
+        Styles.styleButtonSmall(submitCommentButton);
+        submitCommentButton.setVisible(false);
 
         JPanel postContentPanel1 = new JPanel();
         Styles.stylePanel(postContentPanel1);
@@ -154,6 +167,55 @@ class PostPanel extends JPanel {
 
         postContentPanel.add(reactionButton);
         postContentPanel.add(commentButton);
+        postContentPanel.add(submitCommentButton);
+        postContentPanel.add(commentTextArea);
+
+        submitCommentButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String comment = commentTextArea.getText();
+
+                AddCommentRequest addCommentRequest = new AddCommentRequest(post.getPostId(), comment);
+                BaseRequest<AddCommentRequest> commentRequest = new BaseRequest(socket.getUserToken(), addCommentRequest);
+
+                // User Registration
+                try {
+                    // 1 - Create a socket and connect to the server
+                    System.out.println("Client socket created with IP: " + socket.client_ip_address + " and sending to port number: " + ClientSocket.client_port_number);
+
+                    // 3 - Send the User object to the server and tell the server to register
+                    outputStream.writeObject("ADD_COMMENT");
+                    outputStream.writeObject(commentRequest);
+                    System.out.println("Info sent...");
+
+                    // Read the response from the server
+                    boolean commentedSuccess = (boolean) inputStream.readObject();
+                    
+                    if (commentedSuccess) {
+                        JOptionPane.showMessageDialog(null, "Comment posted Successfully");
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Failed Adding A Comment", "Error", JOptionPane.ERROR_MESSAGE);                
+                    }
+                } 
+                catch (Exception e1) {
+                    e1.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "An unexpected error occurred", "Error", JOptionPane.ERROR_MESSAGE);
+                } 
+                
+                // Resetting commentTextArea
+                commentTextArea.setText("");
+                commentTextArea.setVisible(false);
+            }
+        });
+
+        commentButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                isCommentAreaVisible = !isCommentAreaVisible;
+                commentTextArea.setVisible(isCommentAreaVisible);
+                submitCommentButton.setVisible(isCommentAreaVisible);
+            }
+        });
 
         //add panel borders padding and margins
         setBorder(BorderFactory.createCompoundBorder(
@@ -199,8 +261,6 @@ class NewPostPanel extends JPanel {
                 try {
                     // 1 - Create a socket and connect to the server
                     System.out.println("Client socket created with IP: " + client_socket.client_ip_address + " and sending to port number: " + ClientSocket.client_port_number);
-                    
-                    
 
                     // 3 - Send the User object to the server and tell the server to register
                     outputStream.writeObject("ADD_POST");
@@ -239,6 +299,69 @@ class NewPostPanel extends JPanel {
     }
 }
 
+class NewPeoplePanel extends JPanel {
+
+    public NewPeoplePanel(ClientSocket client_socket, ObjectOutputStream outputStream, ObjectInputStream inputStream, List<UserDto> users) {
+        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setAlignmentX(RIGHT_ALIGNMENT);
+
+        for (UserDto user : users) {
+            JPanel userPanel = new JPanel();
+            Styles.stylePanel(userPanel);
+
+            JLabel usernameLabel = new JLabel(user.getUsername());
+            Styles.styleLabel(usernameLabel);
+            userPanel.add(usernameLabel);
+
+            JButton followButton = new JButton("Follow");
+            Styles.styleButtonSmall(followButton);
+
+            followButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                
+                AddNewPeopleRequest addNewPeopleRequest = new AddNewPeopleRequest(user.getUserId());
+                BaseRequest<AddNewPeopleRequest> addFriendRequest = new BaseRequest(client_socket.getUserToken(), addNewPeopleRequest);
+
+                // User Registration
+                try {
+                    // 1 - Create a socket and connect to the server
+                    System.out.println("Client socket created with IP: " + client_socket.client_ip_address + " and sending to port number: " + ClientSocket.client_port_number);
+
+                    // 3 - Send the User object to the server and tell the server to register
+                    outputStream.writeObject("ADD_NEW_PEOPLE");
+                    outputStream.writeObject(addFriendRequest);
+                    System.out.println("Info sent...");
+
+                    // Read the response from the server
+                    boolean friendSuccess = (boolean) inputStream.readObject();
+                    
+                    if (friendSuccess) {
+                        JOptionPane.showMessageDialog(null, "Sent Friend Request Successfully");
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Failed Adding A Friend", "Error", JOptionPane.ERROR_MESSAGE);                
+                    }
+                } 
+                catch (Exception e1) {
+                    e1.printStackTrace();
+                    JOptionPane.showMessageDialog(null, "An unexpected error occurred", "Error", JOptionPane.ERROR_MESSAGE);
+                } 
+            }
+        });
+            //insert to the friendships table base request containing the token and use it to get the current user and add this user and any of the chosen users into the friendships table
+            userPanel.add(followButton);
+
+            add(userPanel);
+        }
+
+        setBorder(BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(Color.BLACK),
+            BorderFactory.createEmptyBorder(10, 10, 10, 10) // Padding
+        ));
+    }
+}
+
+
 class MainPage extends JFrame {
 
     public MainPage(ClientSocket clientSocket, ObjectOutputStream outputStream, ObjectInputStream inputStream) {
@@ -274,11 +397,16 @@ class MainPage extends JFrame {
             }
         }
 
+        List<UserDto> newPeople = getNewPeople(clientSocket, outputStream, inputStream);
+        NewPeoplePanel newPeoplePanel = new NewPeoplePanel(clientSocket, outputStream, inputStream, newPeople);
+
         scrollPane.setViewportView(postsPanel);
 
         add(scrollPane, BorderLayout.CENTER);
 
         add(navBarPanel, BorderLayout.WEST);
+
+        add (newPeoplePanel, BorderLayout.EAST);
 
         pack();
         setLocationRelativeTo(null);
@@ -308,5 +436,29 @@ class MainPage extends JFrame {
                     JOptionPane.showMessageDialog(null, "An unexpected error occurred", "Error", JOptionPane.ERROR_MESSAGE);
                 } 
         return new ArrayList<UserDto>();
+    }
+
+    private List<UserDto> getNewPeople(ClientSocket client_socket, ObjectOutputStream outputStream, ObjectInputStream inputStream) {
+        try {
+            // 1 - Create a socket and connect to the server
+            System.out.println("Client socket created with IP: " + client_socket.client_ip_address + " and sending to port number: " + ClientSocket.client_port_number);
+            
+            
+
+            // 3 - Send the User object to the server and tell the server to register
+            outputStream.writeObject("GET_NEW_PEOPLE");
+            outputStream.writeObject(client_socket.getUserToken());
+            System.out.println("Getting new people...");
+
+            // Read the response from the server
+            List<UserDto> newPeopleList = (List<UserDto>) inputStream.readObject();
+            
+            return newPeopleList;
+        } 
+        catch (Exception e1) {
+            e1.printStackTrace();
+            JOptionPane.showMessageDialog(null, "An unexpected error occurred", "Error", JOptionPane.ERROR_MESSAGE);
+        } 
+        return new ArrayList<UserDto>();  
     }
 }
