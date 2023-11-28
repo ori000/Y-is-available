@@ -6,6 +6,8 @@ import java.util.List;
 
 // UserDTO
 public class UserDto implements Serializable{
+    public static int port_counter = 30;
+
     public int userId;
     public String firstName;
     public String lastName;
@@ -15,6 +17,7 @@ public class UserDto implements Serializable{
     public String region;
     public String phoneNumber;
     public List<PostDto> posts; // Assuming a user can have multiple posts
+    public int port = port_counter++;
     
     public UserDto(
         int userId,
