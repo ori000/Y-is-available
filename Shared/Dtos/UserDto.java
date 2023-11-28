@@ -6,7 +6,6 @@ import java.util.List;
 
 // UserDTO
 public class UserDto implements Serializable{
-    public static int port_counter = 30;
 
     public int userId;
     public String firstName;
@@ -17,7 +16,7 @@ public class UserDto implements Serializable{
     public String region;
     public String phoneNumber;
     public List<PostDto> posts; // Assuming a user can have multiple posts
-    public int port = port_counter++;
+    public int port;
     
     public UserDto(
         int userId,
@@ -28,6 +27,7 @@ public class UserDto implements Serializable{
         String password,
         String region,
         String phoneNumber,
+        int port,
         List<PostDto> posts
     ) {
         this.userId = userId != -1 ? userId : -1;
@@ -38,6 +38,7 @@ public class UserDto implements Serializable{
         this.password = password != null ? password : "";
         this.region = region;
         this.phoneNumber = phoneNumber;
+        this.port = port;
         this.posts = posts != null ? posts : new ArrayList<PostDto>();
     } // Default constructor
 
@@ -81,4 +82,10 @@ public class UserDto implements Serializable{
     public void setPosts(List<PostDto> posts) {
         this.posts = posts != null ? posts : this.posts;
     }
+
+    public int getPort() {
+        return port;
+    }
+
+
 }

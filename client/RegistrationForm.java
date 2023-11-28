@@ -80,7 +80,7 @@ public class RegistrationForm extends JFrame {
                 String lastName = lastNameTextField.getText();
                 String email = emailTextField.getText();
                 String phoneNumber = phoneNumberTextField.getText();
-                String region = regionTextField.getText();
+                String region = regionTextField.getText(); 
                 String password = new String(passwordField.getPassword());
                 String username = usernameField.getText();
                 RegisterationRequest user = new RegisterationRequest(firstName, lastName, username, email, password, region, phoneNumber);
