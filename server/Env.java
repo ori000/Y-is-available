@@ -4,7 +4,7 @@ public class Env {
     private String username;
 
     private void setPassword(){
-        this.password = "Arsenic2004";
+        this.password = "root";
     }
     public String getPassword(){
         setPassword();

@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS Users (
     password VARCHAR(255) NOT NULL,
     region VARCHAR(255),
     phone_number VARCHAR(20),
+    port INT NOT NULL,
     token VARCHAR(255)
 );
 

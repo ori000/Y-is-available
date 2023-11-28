@@ -14,6 +14,7 @@ import Shared.Requests.*;
 import java.util.UUID;
 
 public class DatabaseConnector {
+    public static int port_counter = 30; //starting assigning port number starting from 30
 
     public static Connection getConnection() throws SQLException {
         Env env = new Env();
@@ -33,7 +34,7 @@ public class DatabaseConnector {
                 password = request.getPassword(),
                 username = request.getUsername();
 
-        String sql = "INSERT INTO users (first_name, last_name, email, phone_number, region, password, username) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO users (first_name, last_name, email, phone_number, region, password, username, port) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = getConnection(); PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, firstName);
@@ -43,7 +44,7 @@ public class DatabaseConnector {
             pstmt.setString(5, region);
             pstmt.setString(6, hashPassword(password)); // Hash the password
             pstmt.setString(7, username);
-
+            pstmt.setInt(8, port_counter++);
             
             int affectedRows = pstmt.executeUpdate();
             addSelfFriend(getUser(username).getUserId()); // Add the user to be the friend of himself
@@ -193,7 +194,7 @@ public class DatabaseConnector {
     // region Get User By Username
     public static UserDto getUser(String usernameOrToken) {
 
-        String query = "SELECT user_id, first_name, last_name, username, email, region, phone_number FROM Users WHERE username = ? OR token = ?";
+        String query = "SELECT user_id, first_name, last_name, username, email, region, phone_number, port FROM Users WHERE username = ? OR token = ?";
 
         try (Connection conn = getConnection();
              PreparedStatement stmt = conn.prepareStatement(query)) {
@@ -212,7 +213,9 @@ public class DatabaseConnector {
                             null,
                             resultSet.getString("region"),
                             resultSet.getString("phone_number"),
-                            null);
+                            resultSet.getInt("port"),
+                            null
+                            );
 
                     return user;
                 }
@@ -321,7 +324,7 @@ public static void handleAddReaction(BaseRequest<AddReactionRequest> request) {
     // get the list of friends
     public static List<UserDto> getFriends(String token) {
 
-        String query = "SELECT u.user_id, u.first_name, u.last_name, u.username, u.email, u.region, u.phone_number " +
+        String query = "SELECT u.user_id, u.first_name, u.last_name, u.username, u.email, u.region, u.phone_number, u.port " +
                 "FROM Users u " +
                 "JOIN Friendships f ON (u.user_id = f.user1 OR u.user_id = f.user2) " +
                 "WHERE (f.user1 = ? OR f.user2 = ?)";
@@ -348,6 +351,7 @@ public static void handleAddReaction(BaseRequest<AddReactionRequest> request) {
                             null,
                             resultSet.getString("region"),
                             resultSet.getString("phone_number"),
+                            resultSet.getInt("port"),
                             null);
 
                     friends.add(friend);
@@ -443,7 +447,7 @@ public static void handleAddReaction(BaseRequest<AddReactionRequest> request) {
     //get the list of new people
     public static List<UserDto> getNewPeople(String token) {
 
-        String query = "SELECT u.user_id, u.first_name, u.last_name, u.username, u.email, u.region, u.phone_number " +
+        String query = "SELECT u.user_id, u.first_name, u.last_name, u.username, u.email, u.region, u.phone_number, u.port " +
                        "FROM Users u " +
                        "JOIN Friendships f ON (u.user_id = f.user1 OR u.user_id = f.user2) " +
                        "WHERE (f.user1 != ? OR f.user2 != ?)";
@@ -470,6 +474,7 @@ public static void handleAddReaction(BaseRequest<AddReactionRequest> request) {
                         null,
                         resultSet.getString("region"),
                         resultSet.getString("phone_number"),
+                        resultSet.getInt("port"),
                         null);
 
                     newPeople.add(newPerson);
