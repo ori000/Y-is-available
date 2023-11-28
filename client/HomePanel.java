@@ -20,8 +20,11 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 import java.util.ArrayList;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.Socket;
+import java.net.UnknownHostException;
 
 class PostPanel extends JPanel {
     private JButton commentButton;
@@ -72,7 +75,6 @@ class PostPanel extends JPanel {
                     System.out.println("Client socket created with IP: " + client_socket.client_ip_address + " and sending to port number: " + ClientSocket.client_port_number);
                     
                     BaseRequest<AddReactionRequest> addReactionRequest = new BaseRequest(client_socket.getUserToken(), new AddReactionRequest(post.getPostId(), reactionType));
-                    
 
                     // 3 - Send the User object to the server and tell the server to register
                     outputStream.writeObject("ADD_REACTION");
@@ -204,18 +206,32 @@ class NewPostPanel extends JPanel {
             public void actionPerformed(ActionEvent e) {
                 // Fetch data from text fields including the password
                 String postContent = postTextArea.getText();
-
                 AddPostRequest addPostRequest = new AddPostRequest(postContent, null);
-                BaseRequest<AddPostRequest> postRequest = new BaseRequest(client_socket.getUserToken(), addPostRequest);
+                String user_token = client_socket.getUserToken();
+                BaseRequest<AddPostRequest> postRequest = new BaseRequest(user_token, addPostRequest);
 
-                // User Registration
+                // USER POSTING MESSAGES IMPLEMENTATION
+                List<UserDto> friend_list = DatabaseConnector.getFriends(user_token);
+                for (UserDto friend : friend_list) {
+                    int friend_port_number = friend.getPort();
+                    try {
+                        Socket socket = new Socket("127.0.0.1", friend_port_number);
+                        ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+                        out.writeObject(postContent); // Send the message
+                        out.close();
+                        socket.close();
+                    } catch (Exception e1) {
+                        e1.printStackTrace();
+                    }
+                }
+
+                /* 
                 try {
                     // 1 - Create a socket and connect to the server
                     System.out.println("Client socket created with IP: " + client_socket.client_ip_address
                             + " and sending to port number: " + ClientSocket.client_port_number);
 
-                    // 3 - Send the User object to the server and tell the server to register
-                    outputStream.writeObject("ADD_POST");
+                    outputStream.writeObject("ADD_POST"); //tell the user to add the post
                     outputStream.writeObject(postRequest);
                     System.out.println("Info sent...");
 
@@ -232,17 +248,14 @@ class NewPostPanel extends JPanel {
                     JOptionPane.showMessageDialog(null, "An unexpected error occurred", "Error",
                             JOptionPane.ERROR_MESSAGE);
                 }
+                */
             }
         });
-
         postButtonPanel.add(postButton);
-
-        // add panel borders padding and margins
         setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.BLACK),
                 BorderFactory.createEmptyBorder(10, 10, 10, 10) // Padding
         ));
-
         add(postContentPanel);
         add(postButtonPanel);
     }

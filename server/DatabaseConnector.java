@@ -324,7 +324,7 @@ public static void handleAddReaction(BaseRequest<AddReactionRequest> request) {
     // get the list of friends
     public static List<UserDto> getFriends(String token) {
 
-        String query = "SELECT u.user_id, u.first_name, u.last_name, u.username, u.email, u.region, u.phone_number " +
+        String query = "SELECT u.user_id, u.first_name, u.last_name, u.username, u.email, u.region, u.phone_number, u.port " +
                 "FROM Users u " +
                 "JOIN Friendships f ON (u.user_id = f.user1 OR u.user_id = f.user2) " +
                 "WHERE (f.user1 = ? OR f.user2 = ?)";

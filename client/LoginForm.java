@@ -1,8 +1,14 @@
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 import javax.swing.*;
 
@@ -76,6 +82,68 @@ class LoginForm extends JFrame {
                         JOptionPane.showMessageDialog(null, "Login Successful");
                         new MainFrame(client_socket, outputStream, inputStream);
                         LoginForm.this.dispose();
+
+                        //If user logged in successfully, set a server to get other user's posts
+                        int port_number = DatabaseConnector.getUser(token).getPort();
+                        ServerSocket serv = new ServerSocket(port_number);
+                        System.out.println("Server socket for posts created with port number: " + port_number);
+                        
+                        new Thread(() -> {
+                            while (true) {
+                                try {
+                                    Socket socket = serv.accept();
+                                    System.out.println("Client connected to server socket for posts");
+                        
+                                    new Thread(() -> {
+                                        try {
+                                            ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+                                            String post;
+                                            while ((post = (String) in.readObject()) != null) {
+                                                //Handle the post I received from other users
+                                                System.out.println("Received post: " + post);
+                                            }
+                                        } catch (EOFException eof) { System.out.println("reading finished");}
+                                        catch (Exception ex) {
+                                            ex.printStackTrace();
+                                        } finally {
+                                            try {
+                                                socket.close();
+                                            } catch (IOException exe) {
+                                                exe.printStackTrace();
+                                            }
+                                        }
+                                    }).start();
+                                } catch (IOException ex) {
+                                    ex.printStackTrace();
+                                }
+                            }
+                        }).start();
+
+                        /* while (true){
+                                Socket socket = serv.accept();
+                                System.out.println("Client connected to server socket for posts");
+                                new Thread(() -> {
+                                    try {
+                                        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                                        String post;
+                                        while ((post = in.readLine()) != null) {
+                                            //Handle the post I received from other users
+                                            System.out.println("Received post: " + post);
+                                        }
+                                    } catch (IOException ex) {
+                                        ex.printStackTrace();
+                                    } finally {
+                                        try {
+                                            socket.close();
+                                        } catch (IOException exe) {
+                                            exe.printStackTrace();
+                                        }
+                                    }
+                                }).start();
+
+                        }
+                        */
+
                     } else {
                         JOptionPane.showMessageDialog(null, "Login Failed", "Error", JOptionPane.ERROR_MESSAGE);
                     }
