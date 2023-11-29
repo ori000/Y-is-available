@@ -48,6 +48,22 @@ class PostPanel extends JPanel {
         Styles.styleLabel(postContent);
         postContentPanel1.add(postContent);
 
+        // add comments in jlabels
+        JPanel commentsPanel = new JPanel();
+        Styles.stylePanel(commentsPanel);
+        commentsPanel.setLayout(new BoxLayout(commentsPanel, BoxLayout.Y_AXIS));
+        commentsPanel.setBackground(Color.WHITE);
+        commentsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10)); // Padding
+
+        for (CommentDto comment : post.getComments()) {
+            JLabel commentLabel = new JLabel(comment.getCommentText());
+            Styles.styleLabel(commentLabel);
+            commentsPanel.add(commentLabel);
+        }
+
+        postContentPanel1.add(commentsPanel);
+        
+
         JPanel postContentPanel = new JPanel();
         Styles.stylePanel(postContentPanel);
         JComboBox<ReactionType> reactionButton = new JComboBox<ReactionType>();
@@ -351,6 +367,39 @@ public class HomePanel extends JPanel {
 
 
         add (newPeoplePanel, BorderLayout.EAST);
+
+        // each 10 seconds refresh 
+        Timer timer = new Timer(10000, new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                //remove all posts
+                postsPanel.removeAll();
+                newPeoplePanel.removeAll();
+
+                remove(newPeoplePanel);
+                
+                postsPanel.add(newPostPanel);
+
+                // get all posts from server
+                List<UserDto> usersPosts = getPosts(clientSocket, outputStream, inputStream);
+
+                // add posts to the posts panel
+                for (UserDto user : usersPosts) {
+                    for (PostDto post : user.posts) {
+                        System.out.println(post.getPostText());
+                        PostPanel postPanel = new PostPanel(clientSocket, outputStream, inputStream, post);
+                        postsPanel.add(postPanel);
+                    }
+                }
+                
+                add (newPeoplePanel, BorderLayout.EAST);
+
+                postsPanel.revalidate();
+                postsPanel.repaint();
+            }
+        });
+
+        timer.start();
 
         setVisible(true);
     }
